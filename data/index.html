@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ESP IOT DASHBOARD</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous"> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="http://cdn.rawgit.com/Mikhus/canvas-gauges/gh-pages/download/2.1.7/all/gauge.min.js"></script>
+  </head>
+  <body>
+    <div class="topnav">
+      <h1>ESP WEB SERVER GAUGES</h1>
+    </div>
+    <div class="content">
+      <details>
+        <summary style="margin-bottom: 10px;">TEMPRATURE & HUMEDITY</summary>
+        <div class="card-grid">
+          <div class="card">
+            <p class="card-title">Temperature</p>
+            <canvas id="gauge-temperature"></canvas>
+          </div>
+          <div class="card">
+            <p class="card-title">Humidity</p>
+            <canvas id="gauge-humidity"></canvas>
+          </div>
+        </div>
+      </details>
+      <details>
+        <summary style="margin-bottom: 10px;">MASTER BED</summary>
+      
+      <div class="card-grid">        
+        <div class="card">
+          <p class="card-title">Tube Light</p>
+          <label class="switch">
+            <input type="checkbox" id="relay1" onchange="toggleSwitch(this)">
+            <span class="slider round"></span>
+          </label>
+        </div>
+        <div class="card">
+          <P class="card-title"> Table Lamp </P>
+          <label class="switch">
+            <input type="checkbox" id="relay2" onchange="toggleSwitch(this)">
+            <span class="slider round"></span>
+          </label>
+        </div>
+        <div class="card">
+          <p class="card-title"><i class="fa fa-lightbulb"></i></p>
+          <label class="switch">
+            <input type="checkbox" id="relay3" onchange="toggleSwitch(this)">
+            <span class="slider round"></span>
+          </label>
+        </div>
+        <div class="card">
+          <p class="card-title"><i class="fa fa-fan"></i></p>
+          <input type="range" id="relay4" name="relay4" min="0" max="100"
+             value="0" step="10" list="tickmarks" onchange="updateSpeed(this)" />
+            <datalist id="tickmarks">
+              <option value="0"></option>
+              <option value="10"></option>
+              <option value="20"></option>
+              <option value="30"></option>
+              <option value="40"></option>
+              <option value="50"></option>
+              <option value="60"></option>
+              <option value="70"></option>
+              <option value="80"></option>
+              <option value="90"></option>
+              <option value="100"></option>
+            </datalist>
+            <label for="switch4" style="position: relative; top:-5px"><i class="fa fa-signal"></i></label>
+        </div>
+      </div>
+      </details>
+
+      <details>
+        <summary style="margin-bottom: 10px;">CHILD BED</summary>
+      <div class="card-grid">
+        <div class="card">
+          <p class="card-title">Tube Light</p>
+          <label class="switch">
+            <input type="checkbox" id="relay5" onchange="toggleSwitch(this)">
+            <span class="slider round"></span>
+          </label>
+        </div>
+        <div class="card">
+          <P class="card-title"> Table Lamp </P>
+          <label class="switch">
+            <input type="checkbox" id="relay6" onchange="toggleSwitch(this)">
+            <span class="slider round"></span>
+          </label>
+        </div>
+        <div class="card">
+          <p class="card-title"><i class="fa fa-lightbulb"></i></p>
+          <label class="switch">
+            <input type="checkbox" id="relay7" onchange="toggleSwitch(this)">
+            <span class="slider round"></span>
+          </label>
+        </div>
+        <div class="card">
+          <p class="card-title"><i class="fa fa-fan"></i></p>
+          <input type="range" id="relay8" name="relay8" min="0" max="100" onchange="updateSpeed(this)"
+           value="0" step="10" list="tickmarks" />
+          
+            <label for="switch4" style="position: relative; top:-5px"><i class="fa fa-signal"></i></label>
+        </div>
+      </div>
+      </details>
+    </div>
+  
+    <script src="script.js"></script>
+  </body>
+</html>
