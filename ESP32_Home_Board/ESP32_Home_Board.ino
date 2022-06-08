@@ -15,7 +15,7 @@
 #include "SPIFFS.h"
 #include <Arduino_JSON.h>
 #include <Adafruit_BME280.h>
-#include <Adafruit_Sensor.h>
+// #include <Adafruit_Sensor.h>
 #include <ArduinoJson.h> // Arduino JSON Library
 
 // Replace with your network credentials
@@ -68,31 +68,11 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
       Serial.println(error.c_str());
       return;
     }
-    const String pin_stat = doc["PIN_Status"]; // String variable tha holds LED status
-    const float t = doc["Temp"]; // Float variable that holds temperature
-    const float h = doc["Hum"]; // Float variable that holds Humidity
-    Serial.print(String(pin_stat)); // Print the received data for debugging
-    Serial.print(String(t));
-    Serial.println(String(h));
-    // webSocket.sendTXT("OK"); // Send acknowledgement
-    /* LED: OFF
-       TMP: Temperature
-       Hum: Humidity
-    */
-    display.clearDisplay(); // Clear the display
-    display.setCursor(0, 0); // Set the cursor position to (0,0)
-    display.println("LED:"); // Print LED: on the display
-    display.setCursor(45, 0); // Set the cursor
-    display.print(pin_stat); // print LED Status to the display
-    display.setCursor(0, 20); // Set the cursor position (0, 20)
-    display.println("TMP:"); // Print TMP: on the display
-    display.setCursor(45, 20); // Set the cursor position (45, 20)
-    display.print(t); // Print temperature value
-    display.setCursor(0, 40); // Set the cursor position (0, 40)
-    display.println("HUM:");// Print HUM: on the display
-    display.setCursor(45, 40); // Set the cursor position (45, 40)
-    display.print(h); // Print Humidity vsalue
-    display.display(); // Show all the information on the display
+    const String msg = doc["message"];
+    Serial.println(msg);
+     
+    webSocket.sendTXT("OK"); // Send acknowledgement
+    events.send(getSensorReadings().c_str(),"new_readings", millis());
   }
 }
 // Get Sensor Readings and return JSON object
@@ -215,7 +195,8 @@ void setup() {
 
   // Start server
   server.begin();
-  webSocket.begin("192.168.1.10", 5000, "/iotconnect");
+  
+  webSocket.begin("192.168.1.10", 5000, "/iotconnect?deviceid=ksdfjdsfksdfhkjasdfhiwr2343hkl&secretkey=hksjdf34kjsdfskdj");
   // WebSocket event handler
   webSocket.onEvent(webSocketEvent);
   // if connection failed retry every 5s
