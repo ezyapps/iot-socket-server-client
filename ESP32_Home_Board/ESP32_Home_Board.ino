@@ -10,14 +10,19 @@
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
+#include <WebSocketsClient.h> // WebSocket Client Library for WebSocket
+
 #include "SPIFFS.h"
 #include <Arduino_JSON.h>
 #include <Adafruit_BME280.h>
 #include <Adafruit_Sensor.h>
+#include <ArduinoJson.h> // Arduino JSON Library
 
 // Replace with your network credentials
 const char* ssid = "Shikari WiFi";
 const char* password = "Nsoft2011";
+WebSocketsClient webSocket; // websocket client class instance
+StaticJsonDocument<100> doc;
 
 // Set your Static IP address
 IPAddress local_IP(192, 168, 1, 184);
@@ -53,7 +58,43 @@ void initBME(){
     while (1);
   }
 }
-
+void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
+  if (type == WStype_TEXT)
+  {
+    // deserialize incoming Json String
+    DeserializationError error = deserializeJson(doc, payload); 
+    if (error) { // Print erro msg if incomig String is not JSON formated
+      Serial.print(F("deserializeJson() failed: "));
+      Serial.println(error.c_str());
+      return;
+    }
+    const String pin_stat = doc["PIN_Status"]; // String variable tha holds LED status
+    const float t = doc["Temp"]; // Float variable that holds temperature
+    const float h = doc["Hum"]; // Float variable that holds Humidity
+    Serial.print(String(pin_stat)); // Print the received data for debugging
+    Serial.print(String(t));
+    Serial.println(String(h));
+    // webSocket.sendTXT("OK"); // Send acknowledgement
+    /* LED: OFF
+       TMP: Temperature
+       Hum: Humidity
+    */
+    display.clearDisplay(); // Clear the display
+    display.setCursor(0, 0); // Set the cursor position to (0,0)
+    display.println("LED:"); // Print LED: on the display
+    display.setCursor(45, 0); // Set the cursor
+    display.print(pin_stat); // print LED Status to the display
+    display.setCursor(0, 20); // Set the cursor position (0, 20)
+    display.println("TMP:"); // Print TMP: on the display
+    display.setCursor(45, 20); // Set the cursor position (45, 20)
+    display.print(t); // Print temperature value
+    display.setCursor(0, 40); // Set the cursor position (0, 40)
+    display.println("HUM:");// Print HUM: on the display
+    display.setCursor(45, 40); // Set the cursor position (45, 40)
+    display.print(h); // Print Humidity vsalue
+    display.display(); // Show all the information on the display
+  }
+}
 // Get Sensor Readings and return JSON object
 String getSensorReadings(){
   //readings["temperature"] = String(random(40)); //bme.readTemperature()
@@ -152,27 +193,7 @@ void setup() {
     request->send(200, "text/plain", "OK");
   });
   
-//  server.on("/update-speed", HTTP_GET, [] (AsyncWebServerRequest *request) {
-//    String pinNo;
-//    String pinValue;
-//    // GET input1 value on <ESP_IP>/update?output=<inputMessage1>&state=<inputMessage2>
-//    if (request->hasParam(PARAM_INPUT_1) && request->hasParam(PARAM_INPUT_2)) {
-//      pinNo = request->getParam(PARAM_INPUT_1)->value();
-//      pinValue = request->getParam(PARAM_INPUT_2)->value();
-//      readings[pinNo] =  pinValue;
-//      // digitalWrite(inputMessage1.toInt(), inputMessage2.toInt());
-//    }
-//    else {
-//      pinNo = "No message sent";
-//      pinValue = "No message sent";
-//    }
-//    Serial.print("RELAY: ");
-//    Serial.print(inputMessage1);
-//    Serial.print(" - Set to: ");
-//    Serial.println(inputMessage2);
-//    events.send(getSensorReadings().c_str(),"new_readings" ,millis());
-//    request->send(200, "text/plain", "OK");
-//  });
+
   server.serveStatic("/", SPIFFS, "/");
 
   // Request for the latest sensor readings
@@ -194,9 +215,16 @@ void setup() {
 
   // Start server
   server.begin();
+  webSocket.begin("192.168.1.10", 5000, "/iotconnect");
+  // WebSocket event handler
+  webSocket.onEvent(webSocketEvent);
+  // if connection failed retry every 5s
+  webSocket.setReconnectInterval(5000);
+  
 }
 
 void loop() {
+  webSocket.loop();
   if ((millis() - lastTime) > timerDelay) {
     // Send Events to the client with the Sensor Readings Every 10 seconds
     events.send("ping",NULL,millis());
