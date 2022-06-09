@@ -6,14 +6,14 @@
   The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 *********/
 
-#include <Arduino.h>
+// #include <Arduino.h>
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <WebSocketsClient.h> // WebSocket Client Library for WebSocket
 
 #include "SPIFFS.h"
-#include <Arduino_JSON.h>
+// #include <Arduino_JSON.h>
 #include <Adafruit_BME280.h>
 // #include <Adafruit_Sensor.h>
 #include <ArduinoJson.h> // Arduino JSON Library
@@ -21,8 +21,16 @@
 // Replace with your network credentials
 const char* ssid = "Shikari WiFi";
 const char* password = "Nsoft2011";
-WebSocketsClient webSocket; // websocket client class instance
-StaticJsonDocument<100> doc;
+
+// using namespace websockets;
+
+WebSocketsClient wsClient; // websocket client class instance
+
+//StaticJsonDocument<100> doc;
+DynamicJsonDocument doc(1024);
+// Json Variable to Hold Sensor Readings
+//JSONVar readings, msg;
+DynamicJsonDocument msg(1024);
 
 // Set your Static IP address
 IPAddress local_IP(192, 168, 1, 184);
@@ -41,8 +49,6 @@ AsyncWebServer server(80);
 // Create an Event Source on /events
 AsyncEventSource events("/events");
 
-// Json Variable to Hold Sensor Readings
-JSONVar readings;
 
 // Timer variables
 unsigned long lastTime = 0;
@@ -58,6 +64,7 @@ void initBME(){
     while (1);
   }
 }
+
 void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
   if (type == WStype_TEXT)
   {
@@ -67,14 +74,15 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
       Serial.print(F("deserializeJson() failed: "));
       Serial.println(error.c_str());
       return;
-    }
-    const String msg = doc["message"];
-    Serial.println(msg);
-     
-    webSocket.sendTXT("OK"); // Send acknowledgement
+    }  
+    
+    // Serial.println(deserializeJson(doc));
+    // msg["message"] = "OK";
+    wsClient.sendTXT("{\"message\":\"OK\"}"); // Send acknowledgement
     events.send(getSensorReadings().c_str(),"new_readings", millis());
   }
-}
+ }
+
 // Get Sensor Readings and return JSON object
 String getSensorReadings(){
   //readings["temperature"] = String(random(40)); //bme.readTemperature()
@@ -89,7 +97,9 @@ String getSensorReadings(){
   //readings["relay7"] =  String(random(0,2));
   //readings["relay8"] =  String(random(0,2));
   
-  String jsonString = JSON.stringify(readings);
+  // String jsonString = JSON.stringify(doc);
+  String jsonString = "";
+  serializeJson(doc, jsonString);
   return jsonString;
 }
 
@@ -135,17 +145,17 @@ void setup() {
   initWiFi();
   initSPIFFS();
   
-  readings["temperature"] = String(random(40)); //bme.readTemperature()
-  readings["humidity"] =  String(random(100)); //bme.readHumidity()
+  doc["temperature"] = String(random(40)); //bme.readTemperature()
+  doc["humidity"] =  String(random(100)); //bme.readHumidity()
   
-  readings["relay1"] =  String(random(0,2));
-  readings["relay2"] =  String(random(0,2));
-  readings["relay3"] =  String(random(0,2));
-  readings["relay4"] =  String(random(0,101));
-  readings["relay5"] =  String(random(0,2));
-  readings["relay6"] =  String(random(0,2));
-  readings["relay7"] =  String(random(0,2));
-  readings["relay8"] =  String(random(0,101));
+  doc["relay1"] =  String(random(0,2));
+  doc["relay2"] =  String(random(0,2));
+  doc["relay3"] =  String(random(0,2));
+  doc["relay4"] =  String(random(0,101));
+  doc["relay5"] =  String(random(0,2));
+  doc["relay6"] =  String(random(0,2));
+  doc["relay7"] =  String(random(0,2));
+  doc["relay8"] =  String(random(0,101));
   
   // Web Server Root URL
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
@@ -158,7 +168,7 @@ void setup() {
     if (request->hasParam(PARAM_INPUT_1) && request->hasParam(PARAM_INPUT_2)) {
       inputMessage1 = request->getParam(PARAM_INPUT_1)->value();
       inputMessage2 = request->getParam(PARAM_INPUT_2)->value();
-      readings[inputMessage1] =  inputMessage2;
+      doc[inputMessage1] =  inputMessage2;
       // digitalWrite(inputMessage1.toInt(), inputMessage2.toInt());
     }
     else {
@@ -196,16 +206,34 @@ void setup() {
   // Start server
   server.begin();
   
-  webSocket.begin("192.168.1.10", 5000, "/iotconnect?deviceid=ksdfjdsfksdfhkjasdfhiwr2343hkl&secretkey=hksjdf34kjsdfskdj");
+  wsClient.begin("192.168.1.10", 5000, "/iotconnect?deviceid=ksdfjdsfksdfhkjasdfhiwr2343hkl&secretkey=hksjdf34kjsdfskdj");
   // WebSocket event handler
-  webSocket.onEvent(webSocketEvent);
+  wsClient.onEvent(webSocketEvent);
   // if connection failed retry every 5s
-  webSocket.setReconnectInterval(5000);
-  
+  wsClient.setReconnectInterval(5000);
+
+//  bool connected = wsClient.connect("192.168.1.10", 5000, "/iotconnect?deviceid=ksdfjdsfksdfhkjasdfhiwr2343hkl&secretkey=hksjdf34kjsdfskdj");
+//    if(connected) {
+//        Serial.println("Connected!");
+//        msg["message"]="Hello Server, It's ESP32 Client";
+//        wsClient.send(JSON.stringify(msg));
+//    } else {
+//        Serial.println("Not Connected!");
+//    }
+//    
+//    // run callback when messages are received
+//    wsClient.onMessage([&](WebsocketsMessage message){
+//        Serial.print("Got Message: ");
+//        Serial.println(message.data());
+//    });
 }
 
 void loop() {
-  webSocket.loop();
+  wsClient.loop();
+//  if(wsClient.available()) {
+//        wsClient.poll();
+//    }
+//  delay(500);
   if ((millis() - lastTime) > timerDelay) {
     // Send Events to the client with the Sensor Readings Every 10 seconds
     events.send("ping",NULL,millis());
