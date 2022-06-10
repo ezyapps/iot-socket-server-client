@@ -77,9 +77,28 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
     }  
     
     // Serial.println(deserializeJson(doc));
+    
+    
+    String jsonString = "";
+    serializeJson(doc, jsonString);
+    const String message = doc["message"];
+    Serial.println(jsonString);
+    Serial.println(message);
+    error = deserializeJson(doc, message); 
+    if (error) { // Print erro msg if incomig String is not JSON formated
+      Serial.print(F("deserializeJson() failed: "));
+      Serial.println(error.c_str());
+      return;
+    }
+    serializeJson(doc, jsonString);
+    Serial.println(jsonString);
     // msg["message"] = "OK";
-    wsClient.sendTXT("{\"message\":\"OK\"}"); // Send acknowledgement
+    // wsClient.sendTXT("{\"message\":\"OK\"}"); // Send acknowledgement
     events.send(getSensorReadings().c_str(),"new_readings", millis());
+  }else if (type == WStype_CONNECTED) {
+    Serial.println("Connected to Socket ...");
+  } else if (type == WStype_DISCONNECTED){
+    Serial.println("Socket connection has been lost...");
   }
  }
 
@@ -180,6 +199,7 @@ void setup() {
     Serial.print(" - Set to: ");
     Serial.println(inputMessage2);
     events.send(getSensorReadings().c_str(),"new_readings", millis());
+    wsClient.sendTXT(getSensorReadings().c_str());
     request->send(200, "text/plain", "OK");
   });
   
