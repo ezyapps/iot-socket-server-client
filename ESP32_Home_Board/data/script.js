@@ -1,22 +1,22 @@
 // Get current sensor readings when the page loads  
 window.addEventListener('load', getReadings);
-var relay1 = 0;
-var relay2 = 0;
-var relay3 = 0;
-var relay4 = 0;
-var relay5 = 0;
-var relay6 = 0;
-var relay7 = 0;
-var relay8 = 0;
-const rl1Ct = document.querySelector('#relay1');
-const rl2Ct = document.querySelector('#relay2');
-const rl3Ct = document.querySelector('#relay3');
-const rl4Ct = document.querySelector('#relay4');
+var var1 = 0;
+var var2 = 0;
+var var3 = 0;
+var var4 = 0;
+var var5 = 0;
+var var6 = 0;
+var var7 = 0;
+var var8 = 0;
+const rl1Ct = document.querySelector('#var1');
+const rl2Ct = document.querySelector('#var2');
+const rl3Ct = document.querySelector('#var3');
+const rl4Ct = document.querySelector('#var4');
 
-const rl5Ct = document.querySelector('#relay5');
-const rl6Ct = document.querySelector('#relay6');
-const rl7Ct = document.querySelector('#relay7');
-const rl8Ct = document.querySelector('#relay8');
+const rl5Ct = document.querySelector('#var5');
+const rl6Ct = document.querySelector('#var6');
+const rl7Ct = document.querySelector('#var7');
+const rl8Ct = document.querySelector('#var8');
 
 // Create Temperature Gauge
 var gaugeTemp = new LinearGauge({
@@ -131,7 +131,7 @@ function updateRelay(relay, value) {
       var myObj = JSON.parse(this.responseText);      
     }
   }; 
-  xhr.open("GET", "/update?relay="+relay+"&state="+value, true);
+  xhr.open("GET", "/update?variable="+relay+"&value="+value, true);
   xhr.send();
 }
 // Function to get current readings on the webpage when it loads for the first time
@@ -143,26 +143,26 @@ function getReadings(){
       console.log(myObj);
       var temp = myObj.temperature;
       var hum = myObj.humidity;
-      relay1 = myObj.relay1;
-      relay2 = myObj.relay2;
-      relay3 = myObj.relay3;
-      relay4 = myObj.relay4;
-      relay5 = myObj.relay5;
-      relay6 = myObj.relay6;
-      relay7 = myObj.relay7;
-      relay8 = myObj.relay8;
+      var1 = myObj.var1;
+      var2 = myObj.var2;
+      var3 = myObj.var3;
+      var4 = myObj.var4;
+      var5 = myObj.var5;
+      var6 = myObj.var6;
+      var7 = myObj.var7;
+      var8 = myObj.var8;
 
       gaugeTemp.value = temp;
       gaugeHum.value = hum;
-      console.log(relay1, relay2, relay3, relay4);
-      rl1Ct.checked = (relay1 !== "0")? true:false;
-      rl2Ct.checked = (relay2 !== "0")? true:false;
-      rl3Ct.checked = (relay3 !== "0")? true:false;
-      rl4Ct.value = relay4 // (relay4 !== "0")? true:false;
-      rl5Ct.checked = (relay5 !== "0")? true:false;
-      rl6Ct.checked = (relay6 !== "0")? true:false;
-      rl7Ct.checked = (relay7 !== "0")? true:false;
-      rl8Ct.value = relay8 // (relay4 !== "0")? true:false;
+      console.log(var1, var2, var3, var4);
+      rl1Ct.checked = (var1 !== "0")? true:false;
+      rl2Ct.checked = (var2 !== "0")? true:false;
+      rl3Ct.checked = (var3 !== "0")? true:false;
+      rl4Ct.value = var4 // (relay4 !== "0")? true:false;
+      rl5Ct.checked = (var5 !== "0")? true:false;
+      rl6Ct.checked = (var6 !== "0")? true:false;
+      rl7Ct.checked = (var7 !== "0")? true:false;
+      rl8Ct.value = var8 // (var4 !== "0")? true:false;
     }
   }; 
   xhr.open("GET", "/readings", true);
@@ -193,22 +193,22 @@ if (!!window.EventSource) {
     gaugeTemp.value = myObj.temperature;
     gaugeHum.value = myObj.humidity;
 
-    relay1 = myObj.relay1;
-    relay2 = myObj.relay2;
-    relay3 = myObj.relay3;
-    relay4 = myObj.relay4;
-    relay5 = myObj.relay5;
-    relay6 = myObj.relay6;
-    relay7 = myObj.relay7;
-    relay8 = myObj.relay8;
-    console.log(relay1, relay2, relay3, relay4);
-    rl1Ct.checked = (relay1 !== "0")? true:false;
-    rl2Ct.checked = (relay2 !== "0")? true:false;
-    rl3Ct.checked = (relay3 !== "0")? true:false;
-    rl4Ct.value = relay4 // (relay4 !== "0")? true:false;
-    rl5Ct.checked = (relay5 !== "0")? true:false;
-    rl6Ct.checked = (relay6 !== "0")? true:false;
-    rl7Ct.checked = (relay7 !== "0")? true:false;
-    rl8Ct.value = relay8 // (relay4 !== "0")? true:false;
+    var1 = myObj.var1;
+    var2 = myObj.var2;
+    var3 = myObj.var3;
+    var4 = myObj.var4;
+    var5 = myObj.var5;
+    var6 = myObj.var6;
+    var7 = myObj.var7;
+    var8 = myObj.var8;
+    console.log(var1, var2, var3, var4);
+    rl1Ct.checked = (var1 !== "0")? true:false;
+    rl2Ct.checked = (var2 !== "0")? true:false;
+    rl3Ct.checked = (var3 !== "0")? true:false;
+    rl4Ct.value = var4 // (var4 !== "0")? true:false;
+    rl5Ct.checked = (var5 !== "0")? true:false;
+    rl6Ct.checked = (var6 !== "0")? true:false;
+    rl7Ct.checked = (var7 !== "0")? true:false;
+    rl8Ct.value = var8 // (var4 !== "0")? true:false;
   }, false);
 }

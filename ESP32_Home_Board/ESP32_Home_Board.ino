@@ -1,10 +1,3 @@
-/*********
-  Rui Santos
-  Complete instructions at https://RandomNerdTutorials.com/esp32-web-server-gauges/
-  
-  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files.
-  The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*********/
 
 // #include <Arduino.h>
 #include <WiFi.h>
@@ -27,25 +20,23 @@ const char* password = "Nsoft2011";
 WebSocketsClient wsClient; // websocket client class instance
 
 //StaticJsonDocument<100> doc;
-DynamicJsonDocument doc(1024);
+DynamicJsonDocument doc(1024), msg(1024);
 // Json Variable to Hold Sensor Readings
 //JSONVar readings, msg;
-DynamicJsonDocument msg(1024);
+// DynamicJsonDocument msg(1024);
 
 // Set your Static IP address
 IPAddress local_IP(192, 168, 1, 184);
-// Set your Gateway IP address
 IPAddress gateway(192, 168, 1, 1);
-
 IPAddress subnet(255, 255, 255, 0);
 IPAddress primaryDNS(8, 8, 8, 8);   //optional
 IPAddress secondaryDNS(8, 8, 4, 4); //optional
 
-const char* PARAM_INPUT_1 = "relay";
-const char* PARAM_INPUT_2 = "state";
+const char* PARAM_INPUT_1 = "variable";
+const char* PARAM_INPUT_2 = "value";
+
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
-
 // Create an Event Source on /events
 AsyncEventSource events("/events");
 
@@ -65,35 +56,158 @@ void initBME(){
   }
 }
 
+void applyChangesToPins() {
+  int var1 = doc["var1"];
+  Serial.println(String(var1));
+  if(var1 > 0)
+    digitalWrite(2, HIGH);
+  else
+    digitalWrite(2, LOW);
+
+  int var2 = doc["var2"];
+  if(var2 > 0)
+    digitalWrite(4, HIGH);
+  else
+    digitalWrite(4, LOW);
+
+  int var3 = doc["var3"];
+  if(var3 > 0)
+    digitalWrite(5, HIGH);
+  else
+    digitalWrite(5, LOW);
+
+  int var4 = doc["var4"];
+  if(var4 > 0)
+    digitalWrite(12, HIGH);
+  else
+    digitalWrite(12, LOW);
+
+  int var5 = doc["var5"];
+  if(var5 > 0)
+    digitalWrite(13, HIGH);
+  else
+    digitalWrite(13, LOW);
+
+  int var6 = doc["var6"];
+  if(var5 > 0)
+    digitalWrite(14, HIGH);
+  else
+    digitalWrite(14, LOW);
+
+ int var7 = doc["var7"];
+  if(var7 > 0)
+    digitalWrite(15, HIGH);
+  else
+    digitalWrite(15, LOW);
+
+  int var8 = doc["var8"];
+  if(var8 > 0)
+    digitalWrite(16, HIGH);
+  else
+    digitalWrite(16, LOW);
+}
+
+void evaluateChangesOnSocketMsg(){
+  if(msg["var1"]){
+    doc["var1"] = msg["var1"];    
+  }
+  if(msg["var2"]){
+    doc["var2"] = msg["var2"];    
+  }
+  if(msg["var3"]){
+    doc["var3"] = msg["var3"];
+  }  
+  if(msg["var4"]){
+    doc["var4"] = msg["var4"];
+  }
+  if(msg["var5"]){
+    doc["var5"] = msg["var5"];
+  }
+  if(msg["var6"]){
+    doc["var6"] = msg["var6"];
+  }
+  if(msg["var7"]){
+    doc["var7"] = msg["var7"];
+  }
+  if(msg["var8"]){
+    doc["var8"] = msg["var8"];
+  }
+  if(msg["var9"]){
+    doc["var9"] = msg["var9"];
+  }
+  if(msg["var10"]){
+    doc["var10"] = msg["var10"];
+  }
+  if(msg["var11"]){
+    doc["var11"] = msg["var11"];
+  }
+  if(msg["var12"]){
+    doc["var12"] = msg["var12"];
+  }
+  if(msg["var13"]){
+    doc["var13"] = msg["var13"];
+  }
+  if(msg["var14"]){
+    doc["var14"] = msg["var14"];
+  }
+  if(msg["var15"]){
+    doc["var15"] = msg["var15"];
+  }
+  if(msg["var16"]){
+    doc["var16"] = msg["var16"];
+  }
+  if(msg["var17"]){
+    doc["var17"] = msg["var17"];
+  }
+  if(msg["var18"]){
+    doc["var18"] = msg["var18"];
+  }
+  if(msg["var19"]){
+    doc["var19"] = msg["var19"];
+  }
+  if(msg["var20"]){
+    doc["var20"] = msg["var20"];
+  }
+  if(msg["var21"]){
+    doc["var21"] = msg["var21"];
+  }
+  if(msg["var22"]){
+    doc["var22"] = msg["var22"];
+  }
+  if(msg["var23"]){
+    doc["var23"] = msg["var23"];
+  }
+  if(msg["var24"]){
+    doc["var24"] = msg["var24"];
+  }
+  if(msg["var25"]){
+    doc["var25"] = msg["var25"];
+  }
+}
+
 void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
   if (type == WStype_TEXT)
   {
-    // deserialize incoming Json String
-    DeserializationError error = deserializeJson(doc, payload); 
-    if (error) { // Print erro msg if incomig String is not JSON formated
+    DeserializationError error = deserializeJson(msg, payload); 
+    if (error) { 
       Serial.print(F("deserializeJson() failed: "));
       Serial.println(error.c_str());
       return;
     }  
-    
-    // Serial.println(deserializeJson(doc));
-    
-    
-    String jsonString = "";
-    serializeJson(doc, jsonString);
-    const String message = doc["message"];
-    Serial.println(jsonString);
+    const String message = msg["message"];
     Serial.println(message);
-    error = deserializeJson(doc, message); 
+    error = deserializeJson(msg, message); 
     if (error) { // Print erro msg if incomig String is not JSON formated
       Serial.print(F("deserializeJson() failed: "));
       Serial.println(error.c_str());
       return;
     }
-    serializeJson(doc, jsonString);
+    
+    evaluateChangesOnSocketMsg();
+    applyChangesToPins();
+    String jsonString = "";
+    serializeJson(msg, jsonString);
     Serial.println(jsonString);
-    // msg["message"] = "OK";
-    // wsClient.sendTXT("{\"message\":\"OK\"}"); // Send acknowledgement
     events.send(getSensorReadings().c_str(),"new_readings", millis());
   }else if (type == WStype_CONNECTED) {
     Serial.println("Connected to Socket ...");
@@ -104,19 +218,10 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
 
 // Get Sensor Readings and return JSON object
 String getSensorReadings(){
-  //readings["temperature"] = String(random(40)); //bme.readTemperature()
-  //readings["humidity"] =  String(random(100)); //bme.readHumidity()
   
-  //readings["relay1"] =  String(random(0,2));
-  //readings["relay2"] =  String(random(0,2));
-  //readings["relay3"] =  String(random(0,2));
-  //readings["relay4"] =  String(random(0,2));
-  //readings["relay5"] =  String(random(0,2));
-  //readings["relay6"] =  String(random(0,2));
-  //readings["relay7"] =  String(random(0,2));
-  //readings["relay8"] =  String(random(0,2));
+  doc["temperature"] = String(random(40)); //bme.readTemperature()
+  doc["humidity"] =  String(random(100)); //bme.readHumidity()
   
-  // String jsonString = JSON.stringify(doc);
   String jsonString = "";
   serializeJson(doc, jsonString);
   return jsonString;
@@ -154,28 +259,46 @@ void initWiFi() {
       attmCnt = 0;
     }
   }
+  
   Serial.println(WiFi.localIP());
 }
+void initPinMode(){
+  pinMode(2, OUTPUT);
+  pinMode(4, OUTPUT);
+  pinMode(5, OUTPUT);
+  pinMode(12, OUTPUT);
+  pinMode(13, OUTPUT);
+  pinMode(14, OUTPUT);
+  pinMode(15, OUTPUT);
+  pinMode(16, OUTPUT);
+  pinMode(17, OUTPUT);
+  pinMode(18, OUTPUT);
+  pinMode(19, OUTPUT);
+  pinMode(21, OUTPUT);
+  pinMode(22, OUTPUT);
+  pinMode(24, OUTPUT);
+  pinMode(25, OUTPUT);
 
+  pinMode(26, OUTPUT);
+  pinMode(27, OUTPUT);
+  pinMode(32, OUTPUT);
+  pinMode(33, OUTPUT);
+  pinMode(34, OUTPUT);
+  pinMode(35, OUTPUT);
+  pinMode(36, OUTPUT);
+  pinMode(39, OUTPUT);
+}
 void setup() {
   // Serial port for debugging purposes
   Serial.begin(115200);
   // initBME();
   initWiFi();
   initSPIFFS();
-  
+  initPinMode();
   doc["temperature"] = String(random(40)); //bme.readTemperature()
   doc["humidity"] =  String(random(100)); //bme.readHumidity()
   
-  doc["relay1"] =  String(random(0,2));
-  doc["relay2"] =  String(random(0,2));
-  doc["relay3"] =  String(random(0,2));
-  doc["relay4"] =  String(random(0,101));
-  doc["relay5"] =  String(random(0,2));
-  doc["relay6"] =  String(random(0,2));
-  doc["relay7"] =  String(random(0,2));
-  doc["relay8"] =  String(random(0,101));
-  
+
   // Web Server Root URL
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(SPIFFS, "/index.html", "text/html");
@@ -183,23 +306,25 @@ void setup() {
   server.on("/update", HTTP_GET, [] (AsyncWebServerRequest *request) {
     String inputMessage1;
     String inputMessage2;
-    // GET input1 value on <ESP_IP>/update?output=<inputMessage1>&state=<inputMessage2>
     if (request->hasParam(PARAM_INPUT_1) && request->hasParam(PARAM_INPUT_2)) {
       inputMessage1 = request->getParam(PARAM_INPUT_1)->value();
       inputMessage2 = request->getParam(PARAM_INPUT_2)->value();
       doc[inputMessage1] =  inputMessage2;
       // digitalWrite(inputMessage1.toInt(), inputMessage2.toInt());
+      Serial.print("RELAY: ");
+      Serial.print(inputMessage1);
+      Serial.print(" - Set to: ");
+      Serial.println(inputMessage2);
+      applyChangesToPins();
+      events.send(getSensorReadings().c_str(),"new_readings", millis());
+      wsClient.sendTXT(getSensorReadings().c_str());
+      
     }
     else {
       inputMessage1 = "No message sent";
       inputMessage2 = "No message sent";
     }
-    Serial.print("RELAY: ");
-    Serial.print(inputMessage1);
-    Serial.print(" - Set to: ");
-    Serial.println(inputMessage2);
-    events.send(getSensorReadings().c_str(),"new_readings", millis());
-    wsClient.sendTXT(getSensorReadings().c_str());
+    
     request->send(200, "text/plain", "OK");
   });
   
@@ -227,33 +352,13 @@ void setup() {
   server.begin();
   
   wsClient.begin("192.168.1.10", 5000, "/iotconnect?deviceid=ksdfjdsfksdfhkjasdfhiwr2343hkl&secretkey=hksjdf34kjsdfskdj");
-  // WebSocket event handler
   wsClient.onEvent(webSocketEvent);
-  // if connection failed retry every 5s
   wsClient.setReconnectInterval(5000);
-
-//  bool connected = wsClient.connect("192.168.1.10", 5000, "/iotconnect?deviceid=ksdfjdsfksdfhkjasdfhiwr2343hkl&secretkey=hksjdf34kjsdfskdj");
-//    if(connected) {
-//        Serial.println("Connected!");
-//        msg["message"]="Hello Server, It's ESP32 Client";
-//        wsClient.send(JSON.stringify(msg));
-//    } else {
-//        Serial.println("Not Connected!");
-//    }
-//    
-//    // run callback when messages are received
-//    wsClient.onMessage([&](WebsocketsMessage message){
-//        Serial.print("Got Message: ");
-//        Serial.println(message.data());
-//    });
 }
 
 void loop() {
   wsClient.loop();
-//  if(wsClient.available()) {
-//        wsClient.poll();
-//    }
-//  delay(500);
+
   if ((millis() - lastTime) > timerDelay) {
     // Send Events to the client with the Sensor Readings Every 10 seconds
     events.send("ping",NULL,millis());
