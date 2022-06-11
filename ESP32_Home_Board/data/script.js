@@ -126,11 +126,11 @@ function updateSpeed(element) {
 }
 function updateRelay(relay, value) {
   var xhr = new XMLHttpRequest();
-  xhr.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
-      var myObj = JSON.parse(this.responseText);      
-    }
-  }; 
+  // xhr.onreadystatechange = function() {
+  //   if (this.readyState == 4 && this.status == 200) {
+  //     var myObj = JSON.parse(this.responseText);      
+  //   }
+  // }; 
   xhr.open("GET", "/update?variable="+relay+"&value="+value, true);
   xhr.send();
 }
@@ -155,13 +155,13 @@ function getReadings(){
       gaugeTemp.value = temp;
       gaugeHum.value = hum;
       console.log(var1, var2, var3, var4);
-      rl1Ct.checked = (var1 !== "0")? true:false;
-      rl2Ct.checked = (var2 !== "0")? true:false;
-      rl3Ct.checked = (var3 !== "0")? true:false;
+      rl1Ct.checked = (var1 == "1")? true:false;
+      rl2Ct.checked = (var2 == "1")? true:false;
+      rl3Ct.checked = (var3 == "1")? true:false;
       rl4Ct.value = var4 // (relay4 !== "0")? true:false;
-      rl5Ct.checked = (var5 !== "0")? true:false;
-      rl6Ct.checked = (var6 !== "0")? true:false;
-      rl7Ct.checked = (var7 !== "0")? true:false;
+      rl5Ct.checked = (var5 == "1")? true:false;
+      rl6Ct.checked = (var6 == "1")? true:false;
+      rl7Ct.checked = (var7 == "1")? true:false;
       rl8Ct.value = var8 // (var4 !== "0")? true:false;
     }
   }; 
@@ -202,13 +202,13 @@ if (!!window.EventSource) {
     var7 = myObj.var7;
     var8 = myObj.var8;
     console.log(var1, var2, var3, var4);
-    rl1Ct.checked = (var1 !== "0")? true:false;
-    rl2Ct.checked = (var2 !== "0")? true:false;
-    rl3Ct.checked = (var3 !== "0")? true:false;
+    rl1Ct.checked = (var1 == "1")? true:false;
+    rl2Ct.checked = (var2 == "1")? true:false;
+    rl3Ct.checked = (var3 == "1")? true:false;
     rl4Ct.value = var4 // (var4 !== "0")? true:false;
-    rl5Ct.checked = (var5 !== "0")? true:false;
-    rl6Ct.checked = (var6 !== "0")? true:false;
-    rl7Ct.checked = (var7 !== "0")? true:false;
+    rl5Ct.checked = (var5 == "1")? true:false;
+    rl6Ct.checked = (var6 == "1")? true:false;
+    rl7Ct.checked = (var7 == "1")? true:false;
     rl8Ct.value = var8 // (var4 !== "0")? true:false;
   }, false);
 }

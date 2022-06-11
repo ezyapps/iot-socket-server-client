@@ -1,6 +1,7 @@
 
 // #include <Arduino.h>
 #include <WiFi.h>
+// #include <WiFiMulti.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <WebSocketsClient.h> // WebSocket Client Library for WebSocket
@@ -11,9 +12,36 @@
 // #include <Adafruit_Sensor.h>
 #include <ArduinoJson.h> // Arduino JSON Library
 
-// Replace with your network credentials
+#define Relay1 2
+#define Relay2 4
+#define Relay3 5
+#define Relay4 12
+#define Relay5 13
+#define Relay6 14
+#define Relay7 15
+#define Relay8 17
+#define Relay9 18
+#define Relay10 19
+#define Relay11 21
+#define Relay12 22
+
+#define LDR 34
+#define IRPin 35
+#define DTH11 16
+
+#define SW1 24
+#define SW2 25
+#define SW3 26
+#define SW4 27
+#define SW5 32
+#define SW6 33
+#define SW7 36
+#define SW8 39
+
+
 const char* ssid = "Shikari WiFi";
 const char* password = "Nsoft2011";
+// WiFiMulti wifiMulti;
 
 // using namespace websockets;
 
@@ -45,6 +73,8 @@ AsyncEventSource events("/events");
 unsigned long lastTime = 0;
 unsigned long timerDelay = 10000;
 
+int inp1,inp2,inp3,inp4,inp5,inp6,inp7,inp8,inp9, inp10;
+
 // Create a sensor object
 Adafruit_BME280 bme; // BME280 connect to ESP32 I2C (GPIO 21 = SDA, GPIO 22 = SCL)
 
@@ -59,130 +89,110 @@ void initBME(){
 void applyChangesToPins() {
   int var1 = doc["var1"];
   Serial.println(String(var1));
-  if(var1 > 0)
-    digitalWrite(2, HIGH);
-  else
-    digitalWrite(2, LOW);
+  if(var1 > 0) digitalWrite(2, HIGH); else digitalWrite(2, LOW);
 
   int var2 = doc["var2"];
-  if(var2 > 0)
-    digitalWrite(4, HIGH);
-  else
-    digitalWrite(4, LOW);
+  if(var2 > 0) digitalWrite(4, HIGH); else  digitalWrite(4, LOW);
 
   int var3 = doc["var3"];
-  if(var3 > 0)
-    digitalWrite(5, HIGH);
-  else
-    digitalWrite(5, LOW);
+  if(var3 > 0) digitalWrite(5, HIGH); else digitalWrite(5, LOW);
 
   int var4 = doc["var4"];
-  if(var4 > 0)
-    digitalWrite(12, HIGH);
-  else
-    digitalWrite(12, LOW);
+  if(var4 > 0) digitalWrite(12, HIGH); else digitalWrite(12, LOW);
 
   int var5 = doc["var5"];
-  if(var5 > 0)
-    digitalWrite(13, HIGH);
-  else
-    digitalWrite(13, LOW);
+  if(var5 > 0) digitalWrite(13, HIGH); else digitalWrite(13, LOW);
 
   int var6 = doc["var6"];
-  if(var5 > 0)
-    digitalWrite(14, HIGH);
-  else
-    digitalWrite(14, LOW);
+  if(var5 > 0) digitalWrite(14, HIGH); else digitalWrite(14, LOW);
 
- int var7 = doc["var7"];
-  if(var7 > 0)
-    digitalWrite(15, HIGH);
-  else
-    digitalWrite(15, LOW);
+  int var7 = doc["var7"];
+  if(var7 > 0) digitalWrite(15, HIGH); else digitalWrite(15, LOW);
 
   int var8 = doc["var8"];
-  if(var8 > 0)
-    digitalWrite(16, HIGH);
-  else
-    digitalWrite(16, LOW);
+  if(var8 > 0) digitalWrite(16, HIGH); else digitalWrite(16, LOW);
+ 
+ }
+ 
+void readInputPinsAndSync(){
+  int changed = 0, pinValue = LOW;
+  delay(100);
+  pinValue = digitalRead(SW1);
+  Serial.print("SW1 value: "); Serial.println(String(pinValue));
+  if(pinValue != inp1) {
+    changed=1; 
+    inp1 = pinValue; 
+    if(pinValue>0) doc["var1"]= 0; else doc["var1"]= 1;
+  }
+
+  delay(100);
+  pinValue = digitalRead(SW2);
+  Serial.print("SW2 value: "); Serial.println(String(pinValue));
+  if(pinValue != inp2) {changed=1; inp2 = pinValue; doc["var2"]= !pinValue;}
+
+  delay(100);
+  pinValue = digitalRead(SW3);
+  Serial.print("SW3 value: "); Serial.println(String(pinValue));
+  if(pinValue != inp3) {changed=1; inp3 = pinValue; doc["var3"]=pinValue;}
+  
+  delay(100);
+  pinValue = digitalRead(SW4);
+  Serial.print("SW4 value: "); Serial.println(String(pinValue));
+  if(pinValue != inp4) {changed=1; inp4 = pinValue; doc["var4"]=pinValue;}
+
+  delay(100);
+  pinValue = digitalRead(SW5);
+  Serial.print("SW5 value: "); Serial.println(String(pinValue));
+  if(pinValue != inp5) {changed=1; inp5 = pinValue; doc["var5"]=pinValue;}
+  delay(100);
+  pinValue = digitalRead(SW6);
+  Serial.print("SW6 value: "); Serial.println(String(pinValue));
+  if(pinValue != inp6) {changed=1; inp6 = pinValue; doc["var6"]=pinValue;}
+  delay(100);
+  pinValue = digitalRead(SW7);
+  Serial.print("SW7 value: "); Serial.println(String(pinValue));
+  if(pinValue != inp7) {changed=1; inp7 = pinValue; doc["var7"]=pinValue;}
+  delay(100);
+  pinValue = digitalRead(SW8);
+  Serial.print("SW8 value: "); Serial.println(String(pinValue));
+  if(pinValue != inp8) {changed=1; inp8 = pinValue; doc["var8"]=String(pinValue);}
+  
+  
+  Serial.print("Input Changed: ");
+  Serial.print(String(changed));
+  if(changed > 0){
+    applyChangesToPins();
+    events.send(getSensorReadings().c_str(),"new_readings", millis());
+    wsClient.sendTXT(getSensorReadings().c_str());    
+  }  
 }
 
 void evaluateChangesOnSocketMsg(){
-  if(msg["var1"]){
-    doc["var1"] = msg["var1"];    
-  }
-  if(msg["var2"]){
-    doc["var2"] = msg["var2"];    
-  }
-  if(msg["var3"]){
-    doc["var3"] = msg["var3"];
-  }  
-  if(msg["var4"]){
-    doc["var4"] = msg["var4"];
-  }
-  if(msg["var5"]){
-    doc["var5"] = msg["var5"];
-  }
-  if(msg["var6"]){
-    doc["var6"] = msg["var6"];
-  }
-  if(msg["var7"]){
-    doc["var7"] = msg["var7"];
-  }
-  if(msg["var8"]){
-    doc["var8"] = msg["var8"];
-  }
-  if(msg["var9"]){
-    doc["var9"] = msg["var9"];
-  }
-  if(msg["var10"]){
-    doc["var10"] = msg["var10"];
-  }
-  if(msg["var11"]){
-    doc["var11"] = msg["var11"];
-  }
-  if(msg["var12"]){
-    doc["var12"] = msg["var12"];
-  }
-  if(msg["var13"]){
-    doc["var13"] = msg["var13"];
-  }
-  if(msg["var14"]){
-    doc["var14"] = msg["var14"];
-  }
-  if(msg["var15"]){
-    doc["var15"] = msg["var15"];
-  }
-  if(msg["var16"]){
-    doc["var16"] = msg["var16"];
-  }
-  if(msg["var17"]){
-    doc["var17"] = msg["var17"];
-  }
-  if(msg["var18"]){
-    doc["var18"] = msg["var18"];
-  }
-  if(msg["var19"]){
-    doc["var19"] = msg["var19"];
-  }
-  if(msg["var20"]){
-    doc["var20"] = msg["var20"];
-  }
-  if(msg["var21"]){
-    doc["var21"] = msg["var21"];
-  }
-  if(msg["var22"]){
-    doc["var22"] = msg["var22"];
-  }
-  if(msg["var23"]){
-    doc["var23"] = msg["var23"];
-  }
-  if(msg["var24"]){
-    doc["var24"] = msg["var24"];
-  }
-  if(msg["var25"]){
-    doc["var25"] = msg["var25"];
-  }
+  if(msg["var1"]) doc["var1"] = msg["var1"];  
+  if(msg["var2"]) doc["var2"] = msg["var2"];
+  if(msg["var3"]) doc["var3"] = msg["var3"];  
+  if(msg["var4"]) doc["var4"] = msg["var4"];
+  if(msg["var5"]) doc["var5"] = msg["var5"];
+  if(msg["var6"]) doc["var6"] = msg["var6"];
+  if(msg["var7"]) doc["var7"] = msg["var7"];
+  if(msg["var8"]) doc["var8"] = msg["var8"];
+  if(msg["var9"]) doc["var9"] = msg["var9"];
+  if(msg["var10"]) doc["var10"] = msg["var10"];
+  if(msg["var11"]) doc["var11"] = msg["var11"];
+  if(msg["var12"]) doc["var12"] = msg["var12"];
+  if(msg["var13"]) doc["var13"] = msg["var13"];
+  if(msg["var14"]) doc["var14"] = msg["var14"];
+  if(msg["var15"]) doc["var15"] = msg["var15"];
+  if(msg["var16"]) doc["var16"] = msg["var16"];
+  if(msg["var17"]) doc["var17"] = msg["var17"];
+  if(msg["var18"]) doc["var18"] = msg["var18"];
+  if(msg["var19"]) doc["var19"] = msg["var19"];
+  if(msg["var20"]) doc["var20"] = msg["var20"];
+  if(msg["var21"]) doc["var21"] = msg["var21"];
+  if(msg["var22"]) doc["var22"] = msg["var22"];
+  if(msg["var23"]) doc["var23"] = msg["var23"];
+  if(msg["var24"]) doc["var24"] = msg["var24"];
+  if(msg["var25"]) doc["var25"] = msg["var25"];
 }
 
 void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
@@ -197,7 +207,7 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
     const String message = msg["message"];
     Serial.println(message);
     error = deserializeJson(msg, message); 
-    if (error) { // Print erro msg if incomig String is not JSON formated
+    if (error) { 
       Serial.print(F("deserializeJson() failed: "));
       Serial.println(error.c_str());
       return;
@@ -207,10 +217,11 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
     applyChangesToPins();
     String jsonString = "";
     serializeJson(msg, jsonString);
-    Serial.println(jsonString);
     events.send(getSensorReadings().c_str(),"new_readings", millis());
   }else if (type == WStype_CONNECTED) {
     Serial.println("Connected to Socket ...");
+    // TODO Sync with IoTConnectBD Server
+    
   } else if (type == WStype_DISCONNECTED){
     Serial.println("Socket connection has been lost...");
   }
@@ -237,31 +248,48 @@ void initSPIFFS() {
 
 // Initialize WiFi
 void initWiFi() {
-  
   if (!WiFi.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS)) {
     Serial.println("STA Failed to configure");
   }
   WiFi.mode(WIFI_STA);
+    
+//  wifiMulti.addAP("SDG8", "deltaplan2071");
+//  wifiMulti.addAP("Programmer-DoICT-Jashore", "4321567890");
+//  wifiMulti.addAP(ssid, password);
+//
+//  Serial.println("Connecting Wifi...");
+//  if(wifiMulti.run() == WL_CONNECTED) {
+//      Serial.println("");
+//      Serial.println("WiFi connected");
+//      Serial.println("IP address: ");
+//      Serial.println(WiFi.localIP());
+//  }
+  
+
   WiFi.begin(ssid, password);
-  Serial.print("Connecting to WiFi ..");
+  Serial.print("Connecting to WiFi .. Shikari WiFi");
   int attmCnt = 0;
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print('.');
     delay(1000);
     attmCnt++;
     if(attmCnt == 10) {
+      Serial.print("Connecting to WiFi .. SDG8");
       WiFi.begin("SDG8", "deltaplan2071");
     }else if(attmCnt == 20)
     {
+      Serial.print("Connecting to WiFi .. Programmer-DoICT-Jashore");
       WiFi.begin("Programmer-DoICT-Jashore", "4321567890");
     }else if(attmCnt == 30){
       WiFi.begin(ssid, password);
       attmCnt = 0;
     }
-  }
-  
+  }  
   Serial.println(WiFi.localIP());
 }
+
+
+
 void initPinMode(){
   pinMode(2, OUTPUT);
   pinMode(4, OUTPUT);
@@ -277,16 +305,19 @@ void initPinMode(){
   pinMode(21, OUTPUT);
   pinMode(22, OUTPUT);
   pinMode(24, OUTPUT);
-  pinMode(25, OUTPUT);
-
-  pinMode(26, OUTPUT);
   pinMode(27, OUTPUT);
-  pinMode(32, OUTPUT);
-  pinMode(33, OUTPUT);
-  pinMode(34, OUTPUT);
-  pinMode(35, OUTPUT);
-  pinMode(36, OUTPUT);
-  pinMode(39, OUTPUT);
+  
+  pinMode(26, INPUT_PULLUP);
+  pinMode(25, INPUT_PULLUP);
+  pinMode(32, INPUT_PULLUP);
+  pinMode(33, INPUT_PULLUP);  
+  pinMode(34, INPUT_PULLUP);
+  pinMode(35, INPUT_PULLUP);
+  pinMode(36, INPUT_PULLUP);
+  pinMode(39, INPUT_PULLUP);
+
+  inp1=1;inp3=1;inp5=1;inp7=1;inp9=1;
+  inp2=1;inp4=1;inp6=1;inp8=1;inp10=1;
 }
 void setup() {
   // Serial port for debugging purposes
@@ -357,12 +388,18 @@ void setup() {
 }
 
 void loop() {
+//  if(wifiMulti.run() != WL_CONNECTED) {
+//      Serial.println("WiFi not connected!");
+//      delay(500);
+//  }
+  
   wsClient.loop();
-
+  readInputPinsAndSync();
   if ((millis() - lastTime) > timerDelay) {
     // Send Events to the client with the Sensor Readings Every 10 seconds
     events.send("ping",NULL,millis());
     events.send(getSensorReadings().c_str(),"new_readings" ,millis());
     lastTime = millis();
   }
+  
 }
