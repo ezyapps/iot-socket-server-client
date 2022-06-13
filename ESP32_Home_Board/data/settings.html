@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOME IOT DASHBOARD (Settings)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    <div class="topnav">
+        <h1>HOME DASHBOARD (Settings)</h1>
+        <div style="position: relative">
+            <div style="position: relative; float: right;">
+            
+            <div>
+                <a href="./index.html"  style="color: white;">Dashboard</a>
+            </div>
+            </div>
+            <div style="clear: both;"></div>
+        </div>
+    </div>
+    <div class="content">
+        <div class="card-grid">        
+            <div class="card">
+              <p class="card-title">MANUAL SWITCH</p>
+              <label class="switch">
+                <input type="checkbox" id="MANUAL_SWITCH" onchange="changeInputMode(this)">
+                <span class="slider round"></span>
+              </label>
+            </div>
+            <div class="card">
+              <P class="card-title"> BLUETOOTH MODE </P>
+              <label class="switch">
+                <input type="checkbox" id="BLUETOOTH_MODE" onchange="changeInputMode(this)">
+                <span class="slider round"></span>
+              </label>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

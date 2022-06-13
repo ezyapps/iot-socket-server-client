@@ -112,6 +112,15 @@ var gaugeHum = new RadialGauge({
   animationDuration: 1500,
   animationRule: "linear"
 }).draw();
+function changeInputMode (element) {
+
+  var xhr = new XMLHttpRequest();
+  if(element.checked)
+    xhr.open("GET", "/change_mode?variable="+element.id+"&value=1", true);
+  else
+    xhr.open("GET", "/change_mode?variable="+element.id+"&value=0", true);
+  xhr.send();
+}
 function toggleSwitch(element)
  {
    if(element.checked){ 
@@ -201,7 +210,7 @@ if (!!window.EventSource) {
     var6 = myObj.var6;
     var7 = myObj.var7;
     var8 = myObj.var8;
-    console.log(var1, var2, var3, var4);
+    // console.log(var1, var2, var3, var4);
     rl1Ct.checked = (var1 == "1")? true:false;
     rl2Ct.checked = (var2 == "1")? true:false;
     rl3Ct.checked = (var3 == "1")? true:false;

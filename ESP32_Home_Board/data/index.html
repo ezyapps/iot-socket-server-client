@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>ESP IOT DASHBOARD</title>
+    <title>HOME IOT DASHBOARD</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/png" href="favicon.png">
     <!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous"> -->
@@ -12,10 +12,21 @@
   <body>
     <div class="topnav">
       <h1>ESP WEB SERVER GAUGES</h1>
+      <div style="position: relative">
+        <div style="position: relative; float: right;">
+          <div>
+            Manual Switch Mode: <input type="radio" id="manualModeRadio" name="manualSwitchRadio" value="ON">
+          </div>
+          <div>
+            <a href="./settings.html" style="color: white;">Settings</a>
+          </div>
+        </div>
+        <div style="clear: both;"></div>
+      </div>
     </div>
     <div class="content">
       <details>
-        <summary style="margin-bottom: 10px;">TEMPRATURE & HUMEDITY</summary>
+        <summary style="margin-bottom: 10px;">TEMPARATURE & HUMEDITY</summary>
         <div class="card-grid">
           <div class="card">
             <p class="card-title">Temperature</p>

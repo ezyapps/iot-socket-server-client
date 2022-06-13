@@ -12,18 +12,18 @@
 // #include <Adafruit_Sensor.h>
 #include <ArduinoJson.h> // Arduino JSON Library
 
-#define Relay1 2
-#define Relay2 4
-#define Relay3 5
-#define Relay4 12
-#define Relay5 13
-#define Relay6 14
-#define Relay7 15
-#define Relay8 17
-#define Relay9 18
-#define Relay10 19
-#define Relay11 21
-#define Relay12 22
+#define RELAY1 2
+#define RELAY2 4
+#define RELAY3 5
+#define RELAY4 12
+#define RELAY5 13
+#define RELAY6 14
+#define RELAY7 15
+#define RELAY8 17
+#define RELAY9 18
+#define RELAY10 19
+#define RELAY11 21
+#define RELAY12 22
 
 #define LDR 34
 #define IRPin 35
@@ -73,6 +73,10 @@ AsyncEventSource events("/events");
 unsigned long lastTime = 0;
 unsigned long timerDelay = 10000;
 
+bool MANUAL_SWITCH_MODE = false;
+bool BLUETOOTH_MODE = false;
+
+
 int inp1,inp2,inp3,inp4,inp5,inp6,inp7,inp8,inp9, inp10;
 
 // Create a sensor object
@@ -87,31 +91,42 @@ void initBME(){
 }
 
 void applyChangesToPins() {
-  int var1 = doc["var1"];
+  int var1 = isnan(doc["var1"])? LOW : doc["var1"];
   Serial.println(String(var1));
-  if(var1 > 0) digitalWrite(2, HIGH); else digitalWrite(2, LOW);
+  if(var1 == LOW) digitalWrite(RELAY1, HIGH); else digitalWrite(RELAY1, LOW);
 
-  int var2 = doc["var2"];
-  if(var2 > 0) digitalWrite(4, HIGH); else  digitalWrite(4, LOW);
+  int var2 = isnan(doc["var2"])? LOW : doc["var2"];
+  if(var2 == LOW) digitalWrite(RELAY2, HIGH); else  digitalWrite(RELAY2, LOW);
 
-  int var3 = doc["var3"];
-  if(var3 > 0) digitalWrite(5, HIGH); else digitalWrite(5, LOW);
+  int var3 = isnan(doc["var3"])? LOW : doc["var3"];
+  if(var3 == LOW) digitalWrite(RELAY3, HIGH); else digitalWrite(RELAY3, LOW);
 
-  int var4 = doc["var4"];
-  if(var4 > 0) digitalWrite(12, HIGH); else digitalWrite(12, LOW);
+  int var4 = isnan(doc["var4"])? LOW : doc["var4"];
+  if(var4 == LOW) digitalWrite(RELAY4, HIGH); else digitalWrite(RELAY4, LOW);
 
-  int var5 = doc["var5"];
-  if(var5 > 0) digitalWrite(13, HIGH); else digitalWrite(13, LOW);
+  int var5 = isnan(doc["var5"])? LOW : doc["var5"];
+  if(var5 == LOW) digitalWrite(RELAY5, HIGH); else digitalWrite(RELAY5, LOW);
 
-  int var6 = doc["var6"];
-  if(var5 > 0) digitalWrite(14, HIGH); else digitalWrite(14, LOW);
+  int var6 = isnan(doc["var6"])? LOW : doc["var6"];
+  if(var6 == LOW) digitalWrite(RELAY6, HIGH); else digitalWrite(RELAY6, LOW);
 
-  int var7 = doc["var7"];
-  if(var7 > 0) digitalWrite(15, HIGH); else digitalWrite(15, LOW);
+  int var7 = isnan(doc["var7"])? LOW : doc["var7"];
+  if(var7 == LOW) digitalWrite(RELAY7, HIGH); else digitalWrite(RELAY7, LOW);
 
-  int var8 = doc["var8"];
-  if(var8 > 0) digitalWrite(16, HIGH); else digitalWrite(16, LOW);
- 
+  int var8 = isnan(doc["var8"])? LOW : doc["var8"];
+  if(var8 == LOW) digitalWrite(RELAY8, HIGH); else digitalWrite(RELAY8, LOW);
+
+  int var9 = isnan(doc["var9"])? LOW : doc["var9"];
+  if(var9 == LOW) digitalWrite(RELAY9, HIGH); else digitalWrite(RELAY9, LOW);
+
+  int var10 = isnan(doc["var10"])? LOW : doc["var10"];
+  if(var10 == LOW) digitalWrite(RELAY10, HIGH); else digitalWrite(RELAY10, LOW);
+
+  int var11 = isnan(doc["var11"])? LOW : doc["var11"];
+  if(var11 == LOW) digitalWrite(RELAY11, HIGH); else digitalWrite(RELAY11, LOW);
+
+  int var12 = isnan(doc["var12"])? LOW : doc["var12"];
+  if(var12 == LOW) digitalWrite(RELAY12, HIGH); else digitalWrite(RELAY12, LOW);
  }
  
 void readInputPinsAndSync(){
@@ -122,43 +137,46 @@ void readInputPinsAndSync(){
   if(pinValue != inp1) {
     changed=1; 
     inp1 = pinValue; 
-    if(pinValue>0) doc["var1"]= 0; else doc["var1"]= 1;
+    if(pinValue == LOW ) doc["var1"]= "1"; else doc["var1"]= "0";
   }
 
   delay(100);
   pinValue = digitalRead(SW2);
   Serial.print("SW2 value: "); Serial.println(String(pinValue));
-  if(pinValue != inp2) {changed=1; inp2 = pinValue; doc["var2"]= !pinValue;}
+  if(pinValue != inp2) {
+    changed=1; inp2 = pinValue; 
+    if(pinValue == LOW ) doc["var2"]= "1"; else doc["var2"]= "0";
+  }
 
   delay(100);
   pinValue = digitalRead(SW3);
   Serial.print("SW3 value: "); Serial.println(String(pinValue));
-  if(pinValue != inp3) {changed=1; inp3 = pinValue; doc["var3"]=pinValue;}
+  if(pinValue != inp3) {changed=1; inp3 = pinValue; if(pinValue == LOW ) doc["var3"]= "1"; else doc["var3"]= "0";}
   
   delay(100);
   pinValue = digitalRead(SW4);
   Serial.print("SW4 value: "); Serial.println(String(pinValue));
-  if(pinValue != inp4) {changed=1; inp4 = pinValue; doc["var4"]=pinValue;}
+  if(pinValue != inp4) {changed=1; inp4 = pinValue; if(pinValue == LOW ) doc["var4"]= "1"; else doc["var4"]= "0";}
 
   delay(100);
   pinValue = digitalRead(SW5);
   Serial.print("SW5 value: "); Serial.println(String(pinValue));
-  if(pinValue != inp5) {changed=1; inp5 = pinValue; doc["var5"]=pinValue;}
+  if(pinValue != inp5) {changed=1; inp5 = pinValue; if(pinValue == LOW ) doc["var5"]= "1"; else doc["var5"]= "0";}
   delay(100);
   pinValue = digitalRead(SW6);
   Serial.print("SW6 value: "); Serial.println(String(pinValue));
-  if(pinValue != inp6) {changed=1; inp6 = pinValue; doc["var6"]=pinValue;}
+  if(pinValue != inp6) {changed=1; inp6 = pinValue; if(pinValue == LOW ) doc["var6"]= "1"; else doc["var6"]= "0";}
   delay(100);
   pinValue = digitalRead(SW7);
   Serial.print("SW7 value: "); Serial.println(String(pinValue));
-  if(pinValue != inp7) {changed=1; inp7 = pinValue; doc["var7"]=pinValue;}
+  if(pinValue != inp7) {changed=1; inp7 = pinValue; if(pinValue == LOW ) doc["var7"]= "1"; else doc["var7"]= "0";}
   delay(100);
   pinValue = digitalRead(SW8);
   Serial.print("SW8 value: "); Serial.println(String(pinValue));
-  if(pinValue != inp8) {changed=1; inp8 = pinValue; doc["var8"]=String(pinValue);}
+  if(pinValue != inp8) {changed=1; inp8 = pinValue; if(pinValue == LOW ) doc["var8"]= "1"; else doc["var8"]= "0";}
   
   
-  Serial.print("Input Changed: ");
+  Serial.println("Input Changed: ");
   Serial.print(String(changed));
   if(changed > 0){
     applyChangesToPins();
@@ -168,31 +186,82 @@ void readInputPinsAndSync(){
 }
 
 void evaluateChangesOnSocketMsg(){
-  if(msg["var1"]) doc["var1"] = msg["var1"];  
-  if(msg["var2"]) doc["var2"] = msg["var2"];
-  if(msg["var3"]) doc["var3"] = msg["var3"];  
-  if(msg["var4"]) doc["var4"] = msg["var4"];
-  if(msg["var5"]) doc["var5"] = msg["var5"];
-  if(msg["var6"]) doc["var6"] = msg["var6"];
-  if(msg["var7"]) doc["var7"] = msg["var7"];
-  if(msg["var8"]) doc["var8"] = msg["var8"];
-  if(msg["var9"]) doc["var9"] = msg["var9"];
-  if(msg["var10"]) doc["var10"] = msg["var10"];
-  if(msg["var11"]) doc["var11"] = msg["var11"];
-  if(msg["var12"]) doc["var12"] = msg["var12"];
-  if(msg["var13"]) doc["var13"] = msg["var13"];
-  if(msg["var14"]) doc["var14"] = msg["var14"];
-  if(msg["var15"]) doc["var15"] = msg["var15"];
-  if(msg["var16"]) doc["var16"] = msg["var16"];
-  if(msg["var17"]) doc["var17"] = msg["var17"];
-  if(msg["var18"]) doc["var18"] = msg["var18"];
-  if(msg["var19"]) doc["var19"] = msg["var19"];
-  if(msg["var20"]) doc["var20"] = msg["var20"];
-  if(msg["var21"]) doc["var21"] = msg["var21"];
-  if(msg["var22"]) doc["var22"] = msg["var22"];
-  if(msg["var23"]) doc["var23"] = msg["var23"];
-  if(msg["var24"]) doc["var24"] = msg["var24"];
-  if(msg["var25"]) doc["var25"] = msg["var25"];
+  for(int i=1; i<=25; i++){
+    String varName = "var";
+    varName += i;
+    // if(msg[varName]) 
+    
+    const char* msgValue = msg[varName];
+    Serial.print(varName); Serial.print(" : "); Serial.println(msgValue);
+    if(msgValue != "")
+    {
+      doc[varName] = msg[varName];
+      const char* docValue = doc[varName];
+      Serial.print(msgValue);Serial.print(" --- ");Serial.println(docValue);
+    }
+  }
+  
+//  if(msg["var1"]) 
+//    doc["var1"] = String(msg["var1"]);  
+//  if(msg["var2"]) 
+//    doc["var2"] = String(msg["var2"];
+//  if(msg["var3"]) 
+//    doc["var3"] = String(msg["var3"];  
+//  if(msg["var4"]) 
+//    doc["var4"] = String(msg["var4"];
+//  if(msg["var5"]) 
+//    doc["var5"] = String(msg["var5"];
+//  if(msg["var6"]) 
+//    doc["var6"] = String(msg["var6"];
+//  if(msg["var7"]) 
+//    doc["var7"] = String(msg["var7"];
+//  if(msg["var8"]) 
+//    doc["var8"] = String(msg["var8"];
+//  if(msg["var9"]) 
+//    doc["var9"] = String(msg["var9"];
+//  if(msg["var10"]) 
+//    doc["var10"] = String(msg["var10"];
+//  if(msg["var11"]) 
+//    doc["var11"] = String(msg["var11"];
+//  if(msg["var12"]) 
+//    doc["var12"] = String(msg["var12"];
+//  if(msg["var13"]) 
+//    doc["var13"] = String(msg["var13"];
+//  if(msg["var14"]) 
+//    doc["var14"] = String(msg["var14"];
+//  if(msg["var15"]) 
+//    doc["var15"] = String(msg["var15"];
+//  if(msg["var16"]) 
+//    doc["var16"] = String(msg["var16"];
+//  if(msg["var17"]) 
+//    doc["var17"] = String(msg["var17"];
+//  if(msg["var18"]) 
+//    doc["var18"] = String(msg["var18"];
+//  if(msg["var19"]) 
+//    doc["var19"] = String(msg["var19"];
+//  if(msg["var20"]) 
+//    doc["var20"] = String(msg["var20"];
+//  if(msg["var21"]) 
+//    doc["var21"] = String(msg["var21"];
+//  if(msg["var22"]) 
+//    doc["var22"] = String(msg["var22"];
+//  if(msg["var23"]) 
+//    doc["var23"] = msg["var23"];
+//  if(msg["var24"]) 
+//    doc["var24"] = msg["var24"];
+//  if(msg["var25"]) 
+//    doc["var25"] = msg["var25"];
+
+//  Serial.print(msg["var1"]);Serial.print(" --- ");Serial.println(doc["var1"]);
+//  Serial.print(msg["var2"]);Serial.print(" --- ");Serial.println(doc["var2"]);
+//  Serial.print(msg["var3"]);Serial.print(" --- ");Serial.println(doc["var3"]);
+//  Serial.print(msg["var4"]);Serial.print(" --- ");Serial.println(doc["var4"]);
+//  Serial.print(msg["var5"]);Serial.print(" --- ");Serial.println(doc["var5"]);
+//  Serial.print(msg["var6"]);Serial.print(" --- ");Serial.println(doc["var6"]);
+//  Serial.print(msg["var7"]);Serial.print(" --- ");Serial.println(doc["var7"]);
+//  Serial.print(msg["var8"]);Serial.print(" --- ");Serial.println(doc["var8"]);
+//  Serial.print(msg["var8"]);Serial.print(" --- ");Serial.println(doc["var9"]);
+//  Serial.print(msg["var10"]);Serial.print(" --- ");Serial.println(doc["var10"]);
 }
 
 void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
@@ -212,11 +281,13 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
       Serial.println(error.c_str());
       return;
     }
-    
-    evaluateChangesOnSocketMsg();
-    applyChangesToPins();
     String jsonString = "";
     serializeJson(msg, jsonString);
+    Serial.println(jsonString);
+    evaluateChangesOnSocketMsg();
+    applyChangesToPins();
+    
+    
     events.send(getSensorReadings().c_str(),"new_readings", millis());
   }else if (type == WStype_CONNECTED) {
     Serial.println("Connected to Socket ...");
@@ -316,8 +387,12 @@ void initPinMode(){
   pinMode(36, INPUT_PULLUP);
   pinMode(39, INPUT_PULLUP);
 
-  inp1=1;inp3=1;inp5=1;inp7=1;inp9=1;
-  inp2=1;inp4=1;inp6=1;inp8=1;inp10=1;
+  inp1=HIGH; inp3=HIGH; inp5=HIGH; inp7=HIGH; inp9=HIGH; inp2=HIGH; inp4=HIGH; inp6=HIGH; inp8=HIGH; inp10=HIGH;
+  MANUAL_SWITCH_MODE = false;
+  BLUETOOTH_MODE = false;
+}
+void readBluetoothInput(){
+  
 }
 void setup() {
   // Serial port for debugging purposes
@@ -334,6 +409,24 @@ void setup() {
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(SPIFFS, "/index.html", "text/html");
   });
+
+  server.on("/change_mode", HTTP_GET, [] (AsyncWebServerRequest *request) {
+    String inpMsg1;
+    String inpMsg2;
+    if (request->hasParam(PARAM_INPUT_1) && request->hasParam(PARAM_INPUT_2)) {
+      inpMsg1 = request->getParam(PARAM_INPUT_1)->value();
+      inpMsg2 = request->getParam(PARAM_INPUT_2)->value();
+      if(inpMsg1 == "MANUAL_SWITCH"){
+        MANUAL_SWITCH_MODE = (inpMsg2=="1")? true : false;
+      }
+      if(inpMsg1 == "BLUETOOTH_MODE"){
+        BLUETOOTH_MODE = (inpMsg2=="1")? true : false;
+      }
+      
+    }
+    request->send(200, "text/plain", "OK");
+  });
+  
   server.on("/update", HTTP_GET, [] (AsyncWebServerRequest *request) {
     String inputMessage1;
     String inputMessage2;
@@ -394,7 +487,16 @@ void loop() {
 //  }
   
   wsClient.loop();
-  readInputPinsAndSync();
+  
+  if(MANUAL_SWITCH_MODE == true){
+    readInputPinsAndSync();
+    delay(2000);
+  }
+
+  if (BLUETOOTH_MODE == true) {
+    readBluetoothInput();  
+  }
+  
   if ((millis() - lastTime) > timerDelay) {
     // Send Events to the client with the Sensor Readings Every 10 seconds
     events.send("ping",NULL,millis());
