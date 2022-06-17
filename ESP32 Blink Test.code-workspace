@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "..\\PIO Home\\ESP32 Blink Test"
+		},
+		{
+			"name": "ESP32 My Home Board",
+			"path": "ESP32 My Home Board"
+		}
+	],
+	"settings": {}
+}
