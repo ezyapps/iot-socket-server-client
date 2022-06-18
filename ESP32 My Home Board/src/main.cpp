@@ -13,7 +13,9 @@
 // #include <Adafruit_Sensor.h>
 #include <ArduinoJson.h> // Arduino JSON Library
 
-#define RELAY1 2
+// #include "sharedvariables.cpp"
+
+#define RELAY1 2 
 #define RELAY2 4
 #define RELAY3 5
 #define RELAY4 12
@@ -39,7 +41,6 @@
 #define SW7 36
 #define SW8 39
 
-
 const char* ssid = "Shikari WiFi";
 const char* password = "Nsoft2011";
 
@@ -47,7 +48,7 @@ const char* ap_ssid= "ESP32-Access-Point";
 const char* ap_password = "123456789";
 
 const String deviceid = "ksdfjdsfksdfhkjasdfhiwr2343hkl";
-const String securitykey = "hksjdf34kjsdfskdj";
+const String securitykey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjFlOTRmN2ZiLWY4ZDctNDUzZi1iMzNhLWZiYzZlMzU5YWMxYSIsImlhdCI6MTY1NTU2ODk1MH0.n64PsHeBkF25RBoYVlwY8jniTS1W_ZEj9rRD97T2KQ0";
 const String bluetoothName = "ESP32 BlueTooth";
 
 // WiFiMulti wifiMulti;
@@ -63,9 +64,6 @@ WebSocketsClient wsClient; // websocket client class instance
 
 //StaticJsonDocument<100> doc;
 DynamicJsonDocument doc(1024), msg(1024);
-// Json Variable to Hold Sensor Readings
-//JSONVar readings, msg;
-// DynamicJsonDocument msg(1024);
 
 // Set your Static IP address
 IPAddress local_IP(192, 168, 1, 184);
@@ -77,9 +75,7 @@ IPAddress secondaryDNS(8, 8, 4, 4); //optional
 const char* PARAM_INPUT_1 = "variable";
 const char* PARAM_INPUT_2 = "value";
 
-// Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
-// Create an Event Source on /events
 AsyncEventSource events("/events");
 
 
@@ -91,12 +87,10 @@ bool MANUAL_SWITCH_MODE = false;
 bool BLUETOOTH_MODE = false;
 
 
-int inp1,inp2,inp3,inp4,inp5,inp6,inp7,inp8,inp9, inp10;
+int inp1, inp2, inp3, inp4, inp5, inp6, inp7, inp8, inp9, inp10;
 
-// Create a sensor object
 Adafruit_BME280 bme; // BME280 connect to ESP32 I2C (GPIO 21 = SDA, GPIO 22 = SCL)
 
-// Get Sensor Readings and return JSON object
 String getSensorReadings(){
   
   doc["temperature"] = String(random(40)); //bme.readTemperature()
