@@ -1,5 +1,7 @@
 // Get current sensor readings when the page loads  
 window.addEventListener('load', getReadings);
+var manual_ip_mode = false;
+var blueTooth_ip_mode = false;
 var var1 = 0;
 var var2 = 0;
 var var3 = 0;
@@ -8,6 +10,9 @@ var var5 = 0;
 var var6 = 0;
 var var7 = 0;
 var var8 = 0;
+var var9 = 0;
+var var10 = 0;
+
 const rl1Ct = document.querySelector('#var1');
 const rl2Ct = document.querySelector('#var2');
 const rl3Ct = document.querySelector('#var3');
@@ -17,6 +22,12 @@ const rl5Ct = document.querySelector('#var5');
 const rl6Ct = document.querySelector('#var6');
 const rl7Ct = document.querySelector('#var7');
 const rl8Ct = document.querySelector('#var8');
+
+const rl9Ct = document.querySelector('#var9');
+const rl10Ct = document.querySelector('#var10');
+
+const manualIPCt = document.querySelector('#MANUAL_SWITCH');
+const blueToothIPCt = document.querySelector('#BLUETOOTH_MODE');
 
 // Create Temperature Gauge
 var gaugeTemp = new LinearGauge({
@@ -121,6 +132,9 @@ function changeInputMode (element) {
     xhr.open("GET", "/change_mode?variable="+element.id+"&value=0", true);
   xhr.send();
 }
+function allSwitch(inp) {
+  updateRelay('ALL', inp);
+}
 function toggleSwitch(element)
  {
    if(element.checked){ 
@@ -143,35 +157,49 @@ function updateRelay(relay, value) {
   xhr.open("GET", "/update?variable="+relay+"&value="+value, true);
   xhr.send();
 }
+function syncUI(myObj){
+  var temp = myObj.temperature;
+  var hum = myObj.humidity;
+  manual_ip_mode = myObj.manual_sw_mode;
+  blueTooth_ip_mode = myObj.bt_sw_mode;
+
+  var1 = myObj.var1;
+  var2 = myObj.var2;
+  var3 = myObj.var3;
+  var4 = myObj.var4;
+  var5 = myObj.var5;
+  var6 = myObj.var6;
+  var7 = myObj.var7;
+  var8 = myObj.var8;
+  var9 = myObj.var9;
+  var10 = myObj.var10;
+
+  gaugeTemp.value = temp;
+  gaugeHum.value = hum;
+  console.log(var1, var2, var3, var4, var5, var6, var7, var8);
+  rl1Ct.checked = (var1 == "1")? true:false;
+  rl2Ct.checked = (var2 == "1")? true:false;
+  rl3Ct.checked = (var3 == "1")? true:false;
+  rl4Ct.checked = (var4 == "1")? true:false;
+  rl5Ct.checked = (var5 == "1")? true:false;
+  rl6Ct.checked = (var6 == "1")? true:false;
+  rl7Ct.checked = (var7 == "1")? true:false;
+  rl8Ct.checked = (var8 == "1")? true:false;
+
+  rl9Ct.value = var9; // (var8 == "1")? true:false;
+  rl10Ct.value = var10; //(var8 == "1")? true:false;
+
+  manualIPCt.checked = (manual_ip_mode == "1")? true:false;
+  blueToothIPCt.checked = (blueTooth_ip_mode == "1")? true:false; 
+}
 // Function to get current readings on the webpage when it loads for the first time
-function getReadings(){
+function getReadings() {
   var xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
       var myObj = JSON.parse(this.responseText);
       console.log(myObj);
-      var temp = myObj.temperature;
-      var hum = myObj.humidity;
-      var1 = myObj.var1;
-      var2 = myObj.var2;
-      var3 = myObj.var3;
-      var4 = myObj.var4;
-      var5 = myObj.var5;
-      var6 = myObj.var6;
-      var7 = myObj.var7;
-      var8 = myObj.var8;
-
-      gaugeTemp.value = temp;
-      gaugeHum.value = hum;
-      console.log(var1, var2, var3, var4);
-      rl1Ct.checked = (var1 == "1")? true:false;
-      rl2Ct.checked = (var2 == "1")? true:false;
-      rl3Ct.checked = (var3 == "1")? true:false;
-      rl4Ct.value = var4 // (relay4 !== "0")? true:false;
-      rl5Ct.checked = (var5 == "1")? true:false;
-      rl6Ct.checked = (var6 == "1")? true:false;
-      rl7Ct.checked = (var7 == "1")? true:false;
-      rl8Ct.value = var8 // (var4 !== "0")? true:false;
+      syncUI(myObj);      
     }
   }; 
   xhr.open("GET", "/readings", true);
@@ -199,25 +227,6 @@ if (!!window.EventSource) {
     console.log("new_readings", e.data);
     var myObj = JSON.parse(e.data);
     console.log(myObj);
-    gaugeTemp.value = myObj.temperature;
-    gaugeHum.value = myObj.humidity;
-
-    var1 = myObj.var1;
-    var2 = myObj.var2;
-    var3 = myObj.var3;
-    var4 = myObj.var4;
-    var5 = myObj.var5;
-    var6 = myObj.var6;
-    var7 = myObj.var7;
-    var8 = myObj.var8;
-    // console.log(var1, var2, var3, var4);
-    rl1Ct.checked = (var1 == "1")? true:false;
-    rl2Ct.checked = (var2 == "1")? true:false;
-    rl3Ct.checked = (var3 == "1")? true:false;
-    rl4Ct.value = var4 // (var4 !== "0")? true:false;
-    rl5Ct.checked = (var5 == "1")? true:false;
-    rl6Ct.checked = (var6 == "1")? true:false;
-    rl7Ct.checked = (var7 == "1")? true:false;
-    rl8Ct.value = var8 // (var4 !== "0")? true:false;
+    syncUI(myObj);
   }, false);
 }

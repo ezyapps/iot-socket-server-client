@@ -50,7 +50,7 @@ const char* ap_password = "123456789";
 const String deviceid = "ksdfjdsfksdfhkjasdfhiwr2343hkl";
 const String securitykey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjFlOTRmN2ZiLWY4ZDctNDUzZi1iMzNhLWZiYzZlMzU5YWMxYSIsImlhdCI6MTY1NTU2ODk1MH0.n64PsHeBkF25RBoYVlwY8jniTS1W_ZEj9rRD97T2KQ0";
 const String bluetoothName = "ESP32 BlueTooth";
-
+String btMessage = "";
 // WiFiMulti wifiMulti;
 // using namespace websockets;
 
@@ -91,11 +91,13 @@ int inp1, inp2, inp3, inp4, inp5, inp6, inp7, inp8, inp9, inp10;
 
 Adafruit_BME280 bme; // BME280 connect to ESP32 I2C (GPIO 21 = SDA, GPIO 22 = SCL)
 
-String getSensorReadings(){
+String getSensorReadings() {
   
   doc["temperature"] = String(random(40)); //bme.readTemperature()
   doc["humidity"] =  String(random(100)); //bme.readHumidity()
-  
+  doc["manual_sw_mode"] = (MANUAL_SWITCH_MODE)? "1":"0";
+  doc["bt_sw_mode"] = (BLUETOOTH_MODE)? "1":"0";
+
   String jsonString = "";
   serializeJson(doc, jsonString);
   return jsonString;
@@ -103,48 +105,48 @@ String getSensorReadings(){
 
 
 // Init BME280
-void initBME(){
+void initBME() {
   if (!bme.begin(0x76)) {
     Serial.println("Could not find a valid BME280 sensor, check wiring!");
     while (1);
   }
 }
 
-void applyChangesToPins() {
+void applyChangesToPins(int delaytime) {
   int var1 = isnan(doc["var1"])? LOW : doc["var1"];
   Serial.println(String(var1));
   if(var1 == LOW) digitalWrite(RELAY1, HIGH); else digitalWrite(RELAY1, LOW);
-
+  delay(delaytime);
   int var2 = isnan(doc["var2"])? LOW : doc["var2"];
   if(var2 == LOW) digitalWrite(RELAY2, HIGH); else  digitalWrite(RELAY2, LOW);
-
+  delay(delaytime);
   int var3 = isnan(doc["var3"])? LOW : doc["var3"];
   if(var3 == LOW) digitalWrite(RELAY3, HIGH); else digitalWrite(RELAY3, LOW);
-
+  delay(delaytime);
   int var4 = isnan(doc["var4"])? LOW : doc["var4"];
   if(var4 == LOW) digitalWrite(RELAY4, HIGH); else digitalWrite(RELAY4, LOW);
-
+  delay(delaytime);
   int var5 = isnan(doc["var5"])? LOW : doc["var5"];
   if(var5 == LOW) digitalWrite(RELAY5, HIGH); else digitalWrite(RELAY5, LOW);
-
+  delay(delaytime);
   int var6 = isnan(doc["var6"])? LOW : doc["var6"];
   if(var6 == LOW) digitalWrite(RELAY6, HIGH); else digitalWrite(RELAY6, LOW);
-
+  delay(delaytime);
   int var7 = isnan(doc["var7"])? LOW : doc["var7"];
   if(var7 == LOW) digitalWrite(RELAY7, HIGH); else digitalWrite(RELAY7, LOW);
-
+  delay(delaytime);
   int var8 = isnan(doc["var8"])? LOW : doc["var8"];
   if(var8 == LOW) digitalWrite(RELAY8, HIGH); else digitalWrite(RELAY8, LOW);
-
+  delay(delaytime);
   int var9 = isnan(doc["var9"])? LOW : doc["var9"];
   if(var9 == LOW) digitalWrite(RELAY9, HIGH); else digitalWrite(RELAY9, LOW);
-
+  delay(delaytime);
   int var10 = isnan(doc["var10"])? LOW : doc["var10"];
   if(var10 == LOW) digitalWrite(RELAY10, HIGH); else digitalWrite(RELAY10, LOW);
-
+  delay(delaytime);
   int var11 = isnan(doc["var11"])? LOW : doc["var11"];
   if(var11 == LOW) digitalWrite(RELAY11, HIGH); else digitalWrite(RELAY11, LOW);
-
+  delay(delaytime);
   int var12 = isnan(doc["var12"])? LOW : doc["var12"];
   if(var12 == LOW) digitalWrite(RELAY12, HIGH); else digitalWrite(RELAY12, LOW);
  }
@@ -199,7 +201,7 @@ void readInputPinsAndSync(){
   Serial.println("Input Changed: ");
   Serial.print(String(changed));
   if(changed > 0){
-    applyChangesToPins();
+    applyChangesToPins(50);
     events.send(getSensorReadings().c_str(),"new_readings", millis());
     wsClient.sendTXT(getSensorReadings().c_str());    
   }  
@@ -241,7 +243,7 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
     serializeJson(msg, jsonString);
     Serial.println(jsonString);
     evaluateChangesOnSocketMsg();
-    applyChangesToPins();
+    applyChangesToPins(50);
     
     
     events.send(getSensorReadings().c_str(),"new_readings", millis());
@@ -293,24 +295,122 @@ void initWiFi() {
   Serial.println(WiFi.localIP());
 }
 
+void shutdownAll() {
+  for(int i=1; i<=12; i++){
+    String varName = "var";
+    varName += i;
+    doc[varName] = "0";    
+  }
+  applyChangesToPins(400);
+}
 
+void switchOnAll() {
+  for(int i=1; i<=12; i++){
+    String varName = "var";
+    varName += i;
+    doc[varName] = "1";    
+  }
+  applyChangesToPins(400);
+}
 
-void initPinMode(){
-  pinMode(2, OUTPUT);  pinMode(4, OUTPUT);  pinMode(5, OUTPUT);  pinMode(12, OUTPUT);  pinMode(13, OUTPUT);
-  pinMode(14, OUTPUT);  pinMode(15, OUTPUT);  pinMode(16, OUTPUT);  pinMode(17, OUTPUT);  pinMode(18, OUTPUT);
-  pinMode(19, OUTPUT);  pinMode(21, OUTPUT);  pinMode(22, OUTPUT);  pinMode(24, OUTPUT);  pinMode(27, OUTPUT);
+void toggleSwitch(int swNo){
+  String varName = "var";
+  varName += swNo;
+  doc[varName] = (doc[varName] == "1")? "0":"1";
+  applyChangesToPins(20);
+  events.send(getSensorReadings().c_str(),"new_readings", millis());
+  wsClient.sendTXT(getSensorReadings().c_str());   
+}
+
+void initPinMode() {
   
-  pinMode(26, INPUT_PULLUP);  pinMode(25, INPUT_PULLUP);  pinMode(32, INPUT_PULLUP);  pinMode(33, INPUT_PULLUP);  
-  pinMode(34, INPUT_PULLUP);  pinMode(35, INPUT_PULLUP);  pinMode(36, INPUT_PULLUP);  pinMode(39, INPUT_PULLUP);
+  pinMode(RELAY1, OUTPUT);  pinMode(RELAY2, OUTPUT);  pinMode(RELAY3, OUTPUT);  pinMode(RELAY4, OUTPUT);  pinMode(RELAY5, OUTPUT);
+  pinMode(RELAY6, OUTPUT);  pinMode(RELAY7, OUTPUT);  pinMode(RELAY8, OUTPUT);  pinMode(RELAY9, OUTPUT);  pinMode(RELAY10, OUTPUT);
+  pinMode(RELAY11, OUTPUT);  pinMode(RELAY12, OUTPUT);  
+  
+  digitalWrite(SW1, HIGH); digitalWrite(SW2, HIGH); digitalWrite(SW3, HIGH); digitalWrite(SW4, HIGH);
+  digitalWrite(SW5, HIGH); digitalWrite(SW6, HIGH); digitalWrite(SW7, HIGH); digitalWrite(SW8, HIGH);
 
+  pinMode(LDR, INPUT); pinMode(IRPin, INPUT); pinMode(DTH11, INPUT);
+  pinMode(SW1, INPUT_PULLUP);  pinMode(SW2, INPUT_PULLUP); pinMode(SW3, INPUT_PULLUP); pinMode(SW4, OUTPUT); 
+  pinMode(SW5, INPUT_PULLUP);  pinMode(SW6, INPUT_PULLUP); pinMode(SW7, INPUT_PULLUP);  pinMode(SW8, INPUT_PULLUP);
   inp1=1; inp3=1; inp5=1; inp7=1; inp9=1; inp2=1; inp4=1; inp6=1; inp8=1; inp10=1;
+  
+  
   MANUAL_SWITCH_MODE = false;
   BLUETOOTH_MODE = false;
 }
+
 void readBluetoothInput(){
-  if (SerialBT.available()) {
-    Serial.write(SerialBT.read());
+  
+  if (SerialBT.available()){
+    char incomingChar = SerialBT.read();
+    if (incomingChar != '\n'){
+      btMessage += String(incomingChar);
+    }
+    else{
+      btMessage = "";
+    }
+    Serial.write(incomingChar);  
   }
+
+    if (btMessage == "SW1")
+    {
+      toggleSwitch(1);
+      SerialBT.println("Relay1 is Toggled\n");
+    }    
+    else if (btMessage == "SW2")
+    {
+      toggleSwitch(2);
+      SerialBT.println("Relay2 is Toggled\n");
+    }
+    else if (btMessage == "SW3")
+    {
+      toggleSwitch(3);
+      SerialBT.println("Relay3 is Toggled\n");
+    }
+    else if (btMessage == "SW4")
+    {
+      toggleSwitch(4);
+      SerialBT.println("Relay4 is Toggled\n");
+    }
+    else if (btMessage == "SW5")
+    {
+      toggleSwitch(5);
+      SerialBT.println("Relay5 is Toggled\n");
+    }
+    else if (btMessage == "SW6")
+    {
+      toggleSwitch(6);
+      SerialBT.println("Relay6 is Toggled\n");
+    }else if (btMessage == "SW7")
+    {
+      toggleSwitch(7);
+      SerialBT.println("Relay7 is Toggled\n");
+    }else if (btMessage == "SW8")
+    {
+      toggleSwitch(8);
+      SerialBT.println("Relay8 is Toggled\n");
+    }else if (btMessage == "ALL_OFF")
+    {
+      shutdownAll();
+      SerialBT.println("All Relays are gone shutdown\n");
+    }else if (btMessage == "ALL_ON")
+    {
+      switchOnAll();
+      SerialBT.println("All Relays are switched on\n");
+    }
+    else if (btMessage == "STATUS")
+    {
+      for(int i=1; i<=12; i++) {
+        String varName = "var";
+        varName += i;
+        doc[varName] = "0";
+        String swStatusStr = "Relay " + String(i) + ":  " +  (doc[varName] == "0")? "ON":"OFF";
+        SerialBT.println(swStatusStr); 
+      }
+    }
+  
 }
 void setup() {
   // Serial port for debugging purposes
@@ -320,7 +420,7 @@ void setup() {
   initWiFi();
   initSPIFFS();
   initPinMode();
-
+  shutdownAll();
   doc["temperature"] = String(random(40)); //bme.readTemperature()
   doc["humidity"] =  String(random(100)); //bme.readHumidity()
   
@@ -341,7 +441,9 @@ void setup() {
       }
       if(inpMsg1 == "BLUETOOTH_MODE"){
         BLUETOOTH_MODE = (inpMsg2=="1")? true : false;
-      }      
+      }
+      events.send(getSensorReadings().c_str(),"new_readings", millis());
+      wsClient.sendTXT(getSensorReadings().c_str());  
     }
     request->send(200, "text/plain", "OK");
   });
@@ -352,13 +454,21 @@ void setup() {
     if (request->hasParam(PARAM_INPUT_1) && request->hasParam(PARAM_INPUT_2)) {
       inputMessage1 = request->getParam(PARAM_INPUT_1)->value();
       inputMessage2 = request->getParam(PARAM_INPUT_2)->value();
-      doc[inputMessage1] =  inputMessage2;
+      if(inputMessage1 == "ALL")
+      {
+        if(inputMessage2 == "1") switchOnAll();
+        if(inputMessage2 == "0") shutdownAll();
+      } else {
+        doc[inputMessage1] =  inputMessage2;
+        applyChangesToPins(50);
+      }
+      
       // digitalWrite(inputMessage1.toInt(), inputMessage2.toInt());
-      Serial.print("RELAY: ");
-      Serial.print(inputMessage1);
-      Serial.print(" - Set to: ");
-      Serial.println(inputMessage2);
-      applyChangesToPins();
+      //Serial.print("RELAY: ");
+      //Serial.print(inputMessage1);
+      //Serial.print(" - Set to: ");
+      //Serial.println(inputMessage2);
+      
       events.send(getSensorReadings().c_str(),"new_readings", millis());
       wsClient.sendTXT(getSensorReadings().c_str());
       
