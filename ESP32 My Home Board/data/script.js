@@ -177,20 +177,25 @@ function syncUI(myObj){
   gaugeTemp.value = temp;
   gaugeHum.value = hum;
   console.log(var1, var2, var3, var4, var5, var6, var7, var8);
-  rl1Ct.checked = (var1 == "1")? true:false;
-  rl2Ct.checked = (var2 == "1")? true:false;
-  rl3Ct.checked = (var3 == "1")? true:false;
-  rl4Ct.checked = (var4 == "1")? true:false;
-  rl5Ct.checked = (var5 == "1")? true:false;
-  rl6Ct.checked = (var6 == "1")? true:false;
-  rl7Ct.checked = (var7 == "1")? true:false;
-  rl8Ct.checked = (var8 == "1")? true:false;
-
-  rl9Ct.value = var9; // (var8 == "1")? true:false;
-  rl10Ct.value = var10; //(var8 == "1")? true:false;
-
-  manualIPCt.checked = (manual_ip_mode == "1")? true:false;
-  blueToothIPCt.checked = (blueTooth_ip_mode == "1")? true:false; 
+  try{
+    rl1Ct.checked = (var1 == "1")? true:false;
+    rl2Ct.checked = (var2 == "1")? true:false;
+    rl3Ct.checked = (var3 == "1")? true:false;
+    rl4Ct.checked = (var4 == "1")? true:false;
+    rl5Ct.checked = (var5 == "1")? true:false;
+    rl6Ct.checked = (var6 == "1")? true:false;
+    rl7Ct.checked = (var7 == "1")? true:false;
+    rl8Ct.checked = (var8 == "1")? true:false;
+  
+    rl9Ct.value = var9; // (var8 == "1")? true:false;
+    rl10Ct.value = var10; //(var8 == "1")? true:false;
+  }catch{}
+  
+  try{
+    manualIPCt.checked = (manual_ip_mode == "1")? true:false;
+    blueToothIPCt.checked = (blueTooth_ip_mode == "1")? true:false; 
+  }catch{}
+  
 }
 // Function to get current readings on the webpage when it loads for the first time
 function getReadings() {

@@ -51,6 +51,7 @@ const String deviceid = "ksdfjdsfksdfhkjasdfhiwr2343hkl";
 const String securitykey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjFlOTRmN2ZiLWY4ZDctNDUzZi1iMzNhLWZiYzZlMzU5YWMxYSIsImlhdCI6MTY1NTU2ODk1MH0.n64PsHeBkF25RBoYVlwY8jniTS1W_ZEj9rRD97T2KQ0";
 const String bluetoothName = "ESP32 BlueTooth";
 String btMessage = "";
+
 // WiFiMulti wifiMulti;
 // using namespace websockets;
 
@@ -102,7 +103,20 @@ String getSensorReadings() {
   serializeJson(doc, jsonString);
   return jsonString;
 }
-
+void savePinStatus(){
+  File file = SPIFFS.open("/pinstatus.txt", FILE_WRITE);
+ 
+  if(!file){
+    Serial.println("There was an error opening the file for writing");
+    return;
+  }  
+  if(file.print(getSensorReadings())){
+    Serial.println("PIN Status was written.");
+  } else {
+    Serial.println("Failed to write PIN Statuses.");
+  }  
+  file.close();
+}
 
 // Init BME280
 void initBME() {
@@ -114,43 +128,86 @@ void initBME() {
 
 void applyChangesToPins(int delaytime) {
   int var1 = isnan(doc["var1"])? LOW : doc["var1"];
-  Serial.println(String(var1));
-  if(var1 == LOW) digitalWrite(RELAY1, HIGH); else digitalWrite(RELAY1, LOW);
-  delay(delaytime);
+  if(var1 == digitalRead(RELAY1)) {
+    if(var1 == LOW) digitalWrite(RELAY1, HIGH); else digitalWrite(RELAY1, LOW);
+      delay(delaytime);
+  }
+  
   int var2 = isnan(doc["var2"])? LOW : doc["var2"];
-  if(var2 == LOW) digitalWrite(RELAY2, HIGH); else  digitalWrite(RELAY2, LOW);
-  delay(delaytime);
+  if(var2 == digitalRead(RELAY2)) {
+    if(var2 == LOW) digitalWrite(RELAY2, HIGH); else  digitalWrite(RELAY2, LOW);
+    delay(delaytime);
+  }
   int var3 = isnan(doc["var3"])? LOW : doc["var3"];
-  if(var3 == LOW) digitalWrite(RELAY3, HIGH); else digitalWrite(RELAY3, LOW);
-  delay(delaytime);
+  if(var3 == digitalRead(RELAY3)) {
+    if(var3 == LOW) digitalWrite(RELAY3, HIGH); else digitalWrite(RELAY3, LOW);
+    delay(delaytime);
+  }
   int var4 = isnan(doc["var4"])? LOW : doc["var4"];
-  if(var4 == LOW) digitalWrite(RELAY4, HIGH); else digitalWrite(RELAY4, LOW);
-  delay(delaytime);
+  if(var4 == digitalRead(RELAY4)) {
+    if(var4 == LOW) digitalWrite(RELAY4, HIGH); else digitalWrite(RELAY4, LOW);
+    delay(delaytime);
+  }
   int var5 = isnan(doc["var5"])? LOW : doc["var5"];
-  if(var5 == LOW) digitalWrite(RELAY5, HIGH); else digitalWrite(RELAY5, LOW);
-  delay(delaytime);
+  if(var5 == digitalRead(RELAY5)) {
+    if(var5 == LOW) digitalWrite(RELAY5, HIGH); else digitalWrite(RELAY5, LOW);
+    delay(delaytime);
+  }
   int var6 = isnan(doc["var6"])? LOW : doc["var6"];
-  if(var6 == LOW) digitalWrite(RELAY6, HIGH); else digitalWrite(RELAY6, LOW);
-  delay(delaytime);
+  if(var6 == digitalRead(RELAY6)) {
+    if(var6 == LOW) digitalWrite(RELAY6, HIGH); else digitalWrite(RELAY6, LOW);
+    delay(delaytime);
+  }
   int var7 = isnan(doc["var7"])? LOW : doc["var7"];
-  if(var7 == LOW) digitalWrite(RELAY7, HIGH); else digitalWrite(RELAY7, LOW);
-  delay(delaytime);
+  if(var7 == digitalRead(RELAY7)) {
+    if(var7 == LOW) digitalWrite(RELAY7, HIGH); else digitalWrite(RELAY7, LOW);
+    delay(delaytime);
+  }
   int var8 = isnan(doc["var8"])? LOW : doc["var8"];
-  if(var8 == LOW) digitalWrite(RELAY8, HIGH); else digitalWrite(RELAY8, LOW);
-  delay(delaytime);
+  if(var8 == digitalRead(RELAY8)) {
+    if(var8 == LOW) digitalWrite(RELAY8, HIGH); else digitalWrite(RELAY8, LOW);
+    delay(delaytime);
+  }
   int var9 = isnan(doc["var9"])? LOW : doc["var9"];
-  if(var9 == LOW) digitalWrite(RELAY9, HIGH); else digitalWrite(RELAY9, LOW);
-  delay(delaytime);
+  if(var9 == digitalRead(RELAY9)) {
+    if(var9 == LOW) digitalWrite(RELAY9, HIGH); else digitalWrite(RELAY9, LOW);
+    delay(delaytime);
+  }
   int var10 = isnan(doc["var10"])? LOW : doc["var10"];
-  if(var10 == LOW) digitalWrite(RELAY10, HIGH); else digitalWrite(RELAY10, LOW);
-  delay(delaytime);
+  if(var10 == digitalRead(RELAY10)) {
+    if(var10 == LOW) digitalWrite(RELAY10, HIGH); else digitalWrite(RELAY10, LOW);
+    delay(delaytime);
+  }
   int var11 = isnan(doc["var11"])? LOW : doc["var11"];
-  if(var11 == LOW) digitalWrite(RELAY11, HIGH); else digitalWrite(RELAY11, LOW);
-  delay(delaytime);
+  if(var11 == digitalRead(RELAY11)) {
+    if(var11 == LOW) digitalWrite(RELAY11, HIGH); else digitalWrite(RELAY11, LOW);
+    delay(delaytime);
+  }
   int var12 = isnan(doc["var12"])? LOW : doc["var12"];
-  if(var12 == LOW) digitalWrite(RELAY12, HIGH); else digitalWrite(RELAY12, LOW);
+  if(var12 == digitalRead(RELAY12)) {
+    if(var12 == LOW) digitalWrite(RELAY12, HIGH); else digitalWrite(RELAY12, LOW);
+  }
+  savePinStatus();
  }
- 
+
+ void shutdownAll() {
+  for(int i=1; i<=12; i++){
+    String varName = "var";
+    varName += i;
+    doc[varName] = "0";    
+  }
+  applyChangesToPins(400);
+}
+
+void switchOnAll() {
+  for(int i=1; i<=12; i++){
+    String varName = "var";
+    varName += i;
+    doc[varName] = "1";    
+  }
+  applyChangesToPins(400);
+}
+
 void readInputPinsAndSync(){
   int changed = 0, pinValue = LOW;
   delay(100);
@@ -212,12 +269,12 @@ void evaluateChangesOnSocketMsg(){
     String varName = "var";
     varName += i;
     const char* msgValue = msg[varName];
-    Serial.print(varName); Serial.print(" : "); Serial.println(msgValue);
-    if(msgValue != "")
+    // Serial.print(varName); Serial.print(" : "); Serial.println(msgValue);
+    if(msgValue != NULL)
     {
       doc[varName] = msg[varName];
-      const char* docValue = doc[varName];
-      Serial.print(msgValue);Serial.print(" --- ");Serial.println(docValue);
+      // const char* docValue = doc[varName];
+      // Serial.print(msgValue);Serial.print(" --- ");Serial.println(docValue);
     }
   }
 }
@@ -244,8 +301,6 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
     Serial.println(jsonString);
     evaluateChangesOnSocketMsg();
     applyChangesToPins(50);
-    
-    
     events.send(getSensorReadings().c_str(),"new_readings", millis());
   }else if (type == WStype_CONNECTED) {
     Serial.println("Connected to Socket ...");
@@ -256,13 +311,42 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
   }
  }
 
+void loadLastPinStatus() {
+  File file = SPIFFS.open("/pinstatus.txt");
+  if(!file){
+    Serial.println("There was an error opening the file for reading...");
+    return;
+  }
+
+  if(file.available()) {
+    String allData = file.readString();
+    if(allData != "") {
+      Serial.print("PIN Status from File: ");
+      Serial.println(allData);
+      
+      DeserializationError error = deserializeJson(msg, allData); 
+      if (error) { 
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.c_str());
+        return;
+      }
+      evaluateChangesOnSocketMsg();
+      applyChangesToPins(50);   
+      events.send(getSensorReadings().c_str(),"new_readings", millis());
+    }
+  }
+  file.close();
+}
 
 // Initialize SPIFFS
 void initSPIFFS() {
   if (!SPIFFS.begin()) {
     Serial.println("An error has occurred while mounting SPIFFS");
+    shutdownAll();
+  }else {
+    Serial.println("SPIFFS mounted successfully");
+    loadLastPinStatus();
   }
-  Serial.println("SPIFFS mounted successfully");
 }
 
 // Initialize WiFi
@@ -270,6 +354,9 @@ void initWiFi() {
   if (!WiFi.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS)) {
     Serial.println("STA Failed to configure");
   }
+  // if (!WiFi.softAPConfig(local_IP, gateway, subnet)) {
+  //   Serial.println("STA Failed to configure");
+  // }
   WiFi.mode(WIFI_AP_STA);
   
   WiFi.softAP(ap_ssid, ap_password);
@@ -291,27 +378,12 @@ void initWiFi() {
       WiFi.begin(ssid, password);
       attmCnt = 0;
     }
-  }  
+  }
+  
   Serial.println(WiFi.localIP());
 }
 
-void shutdownAll() {
-  for(int i=1; i<=12; i++){
-    String varName = "var";
-    varName += i;
-    doc[varName] = "0";    
-  }
-  applyChangesToPins(400);
-}
 
-void switchOnAll() {
-  for(int i=1; i<=12; i++){
-    String varName = "var";
-    varName += i;
-    doc[varName] = "1";    
-  }
-  applyChangesToPins(400);
-}
 
 void toggleSwitch(int swNo){
   String varName = "var";
@@ -412,15 +484,17 @@ void readBluetoothInput(){
     }
   
 }
+
+
+
 void setup() {
   // Serial port for debugging purposes
   Serial.begin(115200);
   // initBME();
   SerialBT.begin(bluetoothName);
   initWiFi();
-  initSPIFFS();
   initPinMode();
-  shutdownAll();
+  initSPIFFS();
   doc["temperature"] = String(random(40)); //bme.readTemperature()
   doc["humidity"] =  String(random(100)); //bme.readHumidity()
   
