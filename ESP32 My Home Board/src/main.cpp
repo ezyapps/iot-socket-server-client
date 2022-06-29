@@ -28,18 +28,18 @@
 #define RELAY11 21
 #define RELAY12 22
 
-#define LDR 34
-#define IRPin 35
+#define LDR 36
+#define IRPin 39
 #define DTH11 16
 
-#define SW1 24
+#define SW1 23
 #define SW2 25
 #define SW3 26
 #define SW4 27
 #define SW5 32
 #define SW6 33
-#define SW7 36
-#define SW8 39
+#define SW7 34
+#define SW8 35
 
 const char* ssid = "Shikari WiFi";
 const char* password = "Nsoft2011";
@@ -88,7 +88,7 @@ bool MANUAL_SWITCH_MODE = false;
 bool BLUETOOTH_MODE = false;
 
 
-int inp1, inp2, inp3, inp4, inp5, inp6, inp7, inp8, inp9, inp10;
+bool inp1, inp2, inp3, inp4, inp5, inp6, inp7, inp8, inp9, inp10;
 
 Adafruit_BME280 bme; // BME280 connect to ESP32 I2C (GPIO 21 = SDA, GPIO 22 = SCL)
 
@@ -209,12 +209,12 @@ void switchOnAll() {
 }
 
 void readInputPinsAndSync(){
-  int changed = 0, pinValue = LOW;
+  bool changed = LOW, pinValue = LOW;
   delay(100);
   pinValue = digitalRead(SW1);
   Serial.print("SW1 value: "); Serial.println(String(pinValue));
   if(pinValue != inp1) {
-    changed=1; 
+    changed=HIGH; 
     inp1 = pinValue; 
     if(pinValue == LOW ) doc["var1"]= "1"; else doc["var1"]= "0";
   }
@@ -223,41 +223,41 @@ void readInputPinsAndSync(){
   pinValue = digitalRead(SW2);
   Serial.print("SW2 value: "); Serial.println(String(pinValue));
   if(pinValue != inp2) {
-    changed=1; inp2 = pinValue; 
+    changed=HIGH; inp2 = pinValue; 
     if(pinValue == LOW ) doc["var2"]= "1"; else doc["var2"]= "0";
   }
 
   delay(100);
   pinValue = digitalRead(SW3);
   Serial.print("SW3 value: "); Serial.println(String(pinValue));
-  if(pinValue != inp3) {changed=1; inp3 = pinValue; if(pinValue == LOW ) doc["var3"]= "1"; else doc["var3"]= "0";}
+  if(pinValue != inp3) {changed=HIGH; inp3 = pinValue; if(pinValue == LOW ) doc["var3"]= "1"; else doc["var3"]= "0";}
   
   delay(100);
   pinValue = digitalRead(SW4);
   Serial.print("SW4 value: "); Serial.println(String(pinValue));
-  if(pinValue != inp4) {changed=1; inp4 = pinValue; if(pinValue == LOW ) doc["var4"]= "1"; else doc["var4"]= "0";}
+  if(pinValue != inp4) {changed=HIGH; inp4 = pinValue; if(pinValue == LOW ) doc["var4"]= "1"; else doc["var4"]= "0";}
 
   delay(100);
   pinValue = digitalRead(SW5);
   Serial.print("SW5 value: "); Serial.println(String(pinValue));
-  if(pinValue != inp5) {changed=1; inp5 = pinValue; if(pinValue == LOW ) doc["var5"]= "1"; else doc["var5"]= "0";}
+  if(pinValue != inp5) {changed=HIGH; inp5 = pinValue; if(pinValue == LOW ) doc["var5"]= "1"; else doc["var5"]= "0";}
   delay(100);
   pinValue = digitalRead(SW6);
   Serial.print("SW6 value: "); Serial.println(String(pinValue));
-  if(pinValue != inp6) {changed=1; inp6 = pinValue; if(pinValue == LOW ) doc["var6"]= "1"; else doc["var6"]= "0";}
+  if(pinValue != inp6) {changed=HIGH; inp6 = pinValue; if(pinValue == LOW ) doc["var6"]= "1"; else doc["var6"]= "0";}
   delay(100);
   pinValue = digitalRead(SW7);
   Serial.print("SW7 value: "); Serial.println(String(pinValue));
-  if(pinValue != inp7) {changed=1; inp7 = pinValue; if(pinValue == LOW ) doc["var7"]= "1"; else doc["var7"]= "0";}
+  if(pinValue != inp7) {changed=HIGH; inp7 = pinValue; if(pinValue == LOW ) doc["var7"]= "1"; else doc["var7"]= "0";}
   delay(100);
   pinValue = digitalRead(SW8);
   Serial.print("SW8 value: "); Serial.println(String(pinValue));
-  if(pinValue != inp8) {changed=1; inp8 = pinValue; if(pinValue == LOW ) doc["var8"]= "1"; else doc["var8"]= "0";}
+  if(pinValue != inp8) {changed=HIGH; inp8 = pinValue; if(pinValue == LOW ) doc["var8"]= "1"; else doc["var8"]= "0";}
   
   
-  Serial.println("Input Changed: ");
-  Serial.print(String(changed));
-  if(changed > 0){
+  Serial.print("Input Changed: ");
+  Serial.println(String(changed));
+  if(changed == HIGH){
     applyChangesToPins(50);
     events.send(getSensorReadings().c_str(),"new_readings", millis());
     wsClient.sendTXT(getSensorReadings().c_str());    
@@ -400,13 +400,15 @@ void initPinMode() {
   pinMode(RELAY6, OUTPUT);  pinMode(RELAY7, OUTPUT);  pinMode(RELAY8, OUTPUT);  pinMode(RELAY9, OUTPUT);  pinMode(RELAY10, OUTPUT);
   pinMode(RELAY11, OUTPUT);  pinMode(RELAY12, OUTPUT);  
   
-  digitalWrite(SW1, HIGH); digitalWrite(SW2, HIGH); digitalWrite(SW3, HIGH); digitalWrite(SW4, HIGH);
-  digitalWrite(SW5, HIGH); digitalWrite(SW6, HIGH); digitalWrite(SW7, HIGH); digitalWrite(SW8, HIGH);
-
   pinMode(LDR, INPUT); pinMode(IRPin, INPUT); pinMode(DTH11, INPUT);
-  pinMode(SW1, INPUT_PULLUP);  pinMode(SW2, INPUT_PULLUP); pinMode(SW3, INPUT_PULLUP); pinMode(SW4, OUTPUT); 
+  pinMode(SW1, INPUT_PULLUP);  pinMode(SW2, INPUT_PULLUP); pinMode(SW3, INPUT_PULLUP); pinMode(SW4, INPUT_PULLUP); 
   pinMode(SW5, INPUT_PULLUP);  pinMode(SW6, INPUT_PULLUP); pinMode(SW7, INPUT_PULLUP);  pinMode(SW8, INPUT_PULLUP);
-  inp1=1; inp3=1; inp5=1; inp7=1; inp9=1; inp2=1; inp4=1; inp6=1; inp8=1; inp10=1;
+
+  // digitalWrite(SW1, HIGH); digitalWrite(SW2, HIGH); digitalWrite(SW3, HIGH); digitalWrite(SW4, HIGH);
+  // digitalWrite(SW5, HIGH); digitalWrite(SW6, HIGH); 
+  // digitalWrite(SW7, HIGH); digitalWrite(SW8, HIGH);
+
+  inp1=HIGH; inp2=HIGH; inp3=HIGH; inp4=HIGH; inp5=HIGH; inp6=HIGH; inp7=HIGH; inp8=HIGH; inp9=HIGH; inp10=HIGH;
   
   
   MANUAL_SWITCH_MODE = false;
@@ -589,18 +591,18 @@ void loop() {
   
   if(MANUAL_SWITCH_MODE == true){
     readInputPinsAndSync();
-    delay(2000);
+    delay(100);
   }
 
   if (BLUETOOTH_MODE == true) {
     readBluetoothInput();  
   }
   
-  if ((millis() - lastTime) > timerDelay) {
-    // Send Events to the client with the Sensor Readings Every 10 seconds
-    events.send("ping",NULL,millis());
-    events.send(getSensorReadings().c_str(),"new_readings" ,millis());
-    lastTime = millis();
-  }
+  // if ((millis() - lastTime) > timerDelay) {
+  //   // Send Events to the client with the Sensor Readings Every 10 seconds
+  //   events.send("ping",NULL,millis());
+  //   events.send(getSensorReadings().c_str(),"new_readings" ,millis());
+  //   lastTime = millis();
+  // }
   
 }
